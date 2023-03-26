@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 using _2cpbackend.Dtos;
 using _2cpbackend.Models;
+using _2cpbackend.Services;
 
 [ApiController]
 [Route("api/[Controller]")]
@@ -12,11 +13,16 @@ public class AccountController : Controller
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly IEmailService _emailService;
+    private readonly Random random = new Random();
 
-    public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+    public AccountController(UserManager<IdentityUser> userManager,
+                            SignInManager<IdentityUser> signInManager,
+                            IEmailService emailService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _emailService = emailService;
     }
 
     [HttpPost("Register")]
@@ -70,6 +76,33 @@ public class AccountController : Controller
 
         if (result.Succeeded) return Ok("User logged in.");
         return BadRequest("Invalid login attempt");
+    }
+
+    [HttpPost("ForgotPassword")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordDto data)
+    {
+        var user =  await _userManager.FindByEmailAsync(data.Email);
+        if (user != null)
+        {
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            //var callbackurl = Url.Action("ResetPassword", "Account", new {userId = user.Id, code = code}, protocol: HttpContext.Request.Scheme);
+            await _emailService.SendEmail(data.Email, "Password Reset Code", code);
+        }
+
+        return Ok();
+    }
+
+    [HttpPost("ResetPassword")]
+    public async Task<ActionResult<ResetPasswordDto>> ResetPassword(ResetPasswordDto data)
+    {
+        if(!ModelState.IsValid) return BadRequest("Invalid password format.");
+
+        var user = await _userManager.FindByEmailAsync(data.Email);
+        var result = await _userManager.ResetPasswordAsync(user, data.Code, data.Password);
+
+        if (result.Succeeded) return Ok("Password changed.");
+        AddModelErrors(result);
+        return data;
     }
 
     //Utilities
