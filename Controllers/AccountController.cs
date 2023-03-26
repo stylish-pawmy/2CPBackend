@@ -55,6 +55,23 @@ public class AccountController : Controller
         return Ok();
     }
 
+    [HttpPost("Login")]
+    public async Task<ActionResult<LoginDto>> Login(LoginDto data)
+    {
+        if (!ModelState.IsValid) return BadRequest("Invalid login data.");
+        //Finding the user
+        var user = _userManager.Users.SingleOrDefault(u => u.Email == data.Identifier);
+        if (user == null) user = _userManager.Users.SingleOrDefault(u => u.UserName == data.Identifier);
+        if (user == null) user = _userManager.Users.SingleOrDefault(u => u.PhoneNumber == data.Identifier);
+
+        //Signing in
+        if (user == null) return NotFound("User not found"); 
+        var result = await _signInManager.PasswordSignInAsync(user, data.Password, data.RememberMe, false);
+
+        if (result.Succeeded) return Ok("User logged in.");
+        return BadRequest("Invalid login attempt");
+    }
+
     //Utilities
     [NonAction]
     public void AddModelErrors(IdentityResult result)
