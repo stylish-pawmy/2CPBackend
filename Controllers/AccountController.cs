@@ -45,6 +45,8 @@ public class AccountController : Controller
         //Sign in after creation
         if (result.Succeeded)
         {
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            await _emailService.SendEmail(data.Email, "Email Confirmation", code);
             await _signInManager.SignInAsync(user, false);
             return Ok();
         }
@@ -52,6 +54,18 @@ public class AccountController : Controller
         AddModelErrors(result);
         return data;
 
+    }
+
+    [HttpPost("ConfirmEmail")]
+    public async Task<ActionResult<ConfirmEmailDto>> ConfirmEmail(ConfirmEmailDto data)
+    {
+        if(!ModelState.IsValid) return BadRequest("Invalid email confirmation data.");
+        var user = await _userManager.FindByEmailAsync(data.Email);
+        var result = await _userManager.ConfirmEmailAsync(user, data.Code);
+
+        if (result.Succeeded) return Ok("email confirmed.");
+        AddModelErrors(result);
+        return data;
     }
 
     [HttpGet("LogOff")]
