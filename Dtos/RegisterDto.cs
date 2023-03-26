@@ -15,7 +15,7 @@ public class RegisterDto
     [Required][EmailAddress] public string Email { get; set; } = null!;
 
     //User Name
-    [Required][StringLength(255, MinimumLength = 6)] public string Username { get; set; } = null!;
+    [Required][StringLength(255, MinimumLength = 6)] public string UserName { get; set; } = null!;
 
     //Password
     [StringLength(100, MinimumLength = 6, ErrorMessage = "The {0} must be at least {2} character long.")]
