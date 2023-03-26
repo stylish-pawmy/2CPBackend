@@ -2,6 +2,7 @@ namespace _2cpbackend.Data;
 
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using _2cpbackend.Models;
 
 public class ApplicationDbContext : IdentityDbContext
 {
@@ -10,4 +11,6 @@ public class ApplicationDbContext : IdentityDbContext
     {
         
     }
+
+    public DbSet<ApplicationUser> ApplicationUsers { get; set; } = null!;
 }
