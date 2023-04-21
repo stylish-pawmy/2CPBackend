@@ -15,5 +15,5 @@ public class ResetPasswordDto
     [Compare("Password", ErrorMessage = "Password and confirmation password do not match.")]
     [Required][DataType(DataType.Password)] public string ConfirmPassword { get; set; } = null!;
 
-    public string? Code { get; set; }
+    [Required] public string Code { get; set; } = null!;
 }

@@ -61,6 +61,9 @@ public class AccountController : Controller
     {
         if(!ModelState.IsValid) return BadRequest("Invalid email confirmation data.");
         var user = await _userManager.FindByEmailAsync(data.Email);
+
+        if (user == null) return NotFound($"No user with email {data.Email} could be found.");
+
         var result = await _userManager.ConfirmEmailAsync(user, data.Code);
 
         if (result.Succeeded) return Ok("email confirmed.");
@@ -112,6 +115,9 @@ public class AccountController : Controller
         if(!ModelState.IsValid) return BadRequest("Invalid password format.");
 
         var user = await _userManager.FindByEmailAsync(data.Email);
+
+        if (user == null) return NotFound("User not found");
+
         var result = await _userManager.ResetPasswordAsync(user, data.Code, data.Password);
 
         if (result.Succeeded) return Ok("Password changed.");

@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace _2cpbackend.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("[controller]")]
 public class WeatherForecastController : ControllerBase
 {

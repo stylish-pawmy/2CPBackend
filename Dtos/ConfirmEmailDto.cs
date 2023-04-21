@@ -8,6 +8,6 @@ public class ConfirmEmailDto
     [Required][EmailAddress] public string Email { get; set; } = null!;
 
     //Code
-    public string? Code { get; set; }
+    [Required]public string Code { get; set; } = null!;
 
 }
