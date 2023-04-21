@@ -11,7 +11,6 @@ public class Event
     [Required] public string Title { get; set; } = null!;
     //Date
     [Required][DataType(DataType.DateTime)] public DateTime Date { get; set; }
-    public Point? Location { get; set; }
     //Description
     public string? Description { get; set; }
     //Price
