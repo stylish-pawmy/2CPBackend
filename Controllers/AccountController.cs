@@ -11,13 +11,13 @@ using _2cpbackend.Services;
 [Route("api/[Controller]")]
 public class AccountController : Controller
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IEmailService _emailService;
     private readonly Random random = new Random();
 
-    public AccountController(UserManager<IdentityUser> userManager,
-                            SignInManager<IdentityUser> signInManager,
+    public AccountController(UserManager<ApplicationUser> userManager,
+                            SignInManager<ApplicationUser> signInManager,
                             IEmailService emailService)
     {
         _userManager = userManager;
