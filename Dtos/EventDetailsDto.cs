@@ -21,4 +21,5 @@ public class EventDetailsDto
     //OrganizerDetails
     [Required] public string? OrganizerUserName { get; set; } = null!;
     [Required] public string? OrganizerId { get; set; } = null!;
+    [Required] public int NumberOfSubscribers { get; set; }
 }

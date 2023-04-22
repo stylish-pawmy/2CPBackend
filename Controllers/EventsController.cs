@@ -78,7 +78,10 @@ public class EventsController : ControllerBase
     [HttpGet("GetEvent")]
     public ActionResult<EventDetailsDto> GetEvent(Guid Id)
     {
-        var resource = _context.Events.Include(e => e.Organizer).SingleOrDefault(e => e.Id == Id);
+        var resource = _context.Events
+        .Include(e => e.Organizer)
+        .Include(e => e.Attendees)
+        .SingleOrDefault(e => e.Id == Id);
 
         //Resource not found
         if (resource == null)
@@ -99,8 +102,45 @@ public class EventsController : ControllerBase
                 Latitude = resource.Location.Y
             },
             OrganizerUserName = resource.Organizer.UserName,
-            OrganizerId = resource.Organizer.Id
+            OrganizerId = resource.Organizer.Id,
+            NumberOfSubscribers = resource.Attendees.Count()
         };
+
+        return Ok(data);
+    }
+
+    [HttpGet("GetEventsList")]
+    public ActionResult<IEnumerable<Guid>> GetEventsList()
+    {
+        var resource = _context.Events.ToList();
+        //Resource not found
+        if (resource == null)
+            return NotFound();
+        
+        //Resource found
+        var data = new List<Guid>();
+
+        foreach(Event _event in resource)
+        {
+            data.Add(_event.Id);
+        }
+
+        return Ok(data);
+    }
+
+    [HttpGet("GetEventsPage")]
+    public ActionResult<IEnumerable<Guid>> GetEventsPage(int startIndex, int endIndex)
+    {
+        var resource = _context.Events.ToList();
+        var limit = Math.Max(resource.Count - 1, 0);
+        
+        //Resource found
+        var data = new List<Guid>();
+
+        foreach(Event _event in resource.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)))
+        {
+            data.Add(_event.Id);
+        }
 
         return Ok(data);
     }

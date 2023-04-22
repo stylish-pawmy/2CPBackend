@@ -45,9 +45,11 @@ public class SubscriptionsController : ControllerBase
 
         if (_event == null) return NotFound();
 
+        var limit = Math.Max(_event.Attendees.Count - 1, 0);
+
         var subscribersList = new List<string>();
 
-        foreach (ApplicationUser user in _event.Attendees.GetRange(startIndex, endIndex))
+        foreach (ApplicationUser user in _event.Attendees.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)))
             subscribersList.Add(user.Id);
         
         return Ok(subscribersList);
