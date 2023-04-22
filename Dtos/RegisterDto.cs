@@ -1,4 +1,4 @@
-namespace _2cpbackend.Dtos;
+namespace _2cpbackend.Models;
 
 using System.ComponentModel.DataAnnotations;
 
@@ -27,5 +27,8 @@ public class RegisterDto
 
     //Birth Date
     [Required][DataType(DataType.DateTime)] public DateTime BirthDate { get; set; }
+
+    //Profile Picture
+    public IFormFile? ProfilePictureFile { get; set; }
 
 }
