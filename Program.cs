@@ -19,6 +19,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFramework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default"), o => o.UseNetTopologySuite())
     );
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+});
 builder.Services.AddScoped<IEmailService, MailJetEmailService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

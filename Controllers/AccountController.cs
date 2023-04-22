@@ -2,6 +2,7 @@ namespace _2cpbackend.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 using _2cpbackend.Dtos;
 using _2cpbackend.Models;
@@ -26,9 +27,15 @@ public class AccountController : Controller
     }
 
     [HttpPost("Register")]
-    public async Task<ActionResult<RegisterDto>> Register(RegisterDto data)
+    public async Task<ActionResult<RegisterDto>> RegisterAsync(RegisterDto data)
     {
-        if (!ModelState.IsValid) return BadRequest("Invalid registration data.");
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(GetModelErrors(ModelState.Values));
+        }
+
+        if((await _userManager.FindByEmailAsync(data.Email)) != null) return Conflict("Email already taken.");
+        if((await _userManager.FindByEmailAsync(data.Email)) != null) return Conflict("Email already taken.");
 
         var user = new ApplicationUser
         {
@@ -36,7 +43,9 @@ public class AccountController : Controller
             Email = data.Email,
             BirthDate = data.BirthDate.ToUniversalTime(),
             FirstName = data.FirstName,
-            LastName = data.LastName
+            LastName = data.LastName,
+            AttendedByUser = new List<Event>(),
+            OrganizedByUser = new List<Event>()
         };
 
         //Creating the user
@@ -52,7 +61,7 @@ public class AccountController : Controller
         }
         
         AddModelErrors(result);
-        return data;
+        return StatusCode(500, result);
 
     }
 
@@ -133,5 +142,19 @@ public class AccountController : Controller
         {
             ModelState.AddModelError(string.Empty, error.Description);
         }
+    }
+
+    [NonAction]
+    public string GetModelErrors(ModelStateDictionary.ValueEnumerable values)
+    {
+        string body = string.Empty;
+        foreach (ModelStateEntry entry in values)
+        {
+            foreach(ModelError error in entry.Errors)
+            {
+                body += error.ErrorMessage + "\n";
+            }
+        }
+        return body;
     }
 }
