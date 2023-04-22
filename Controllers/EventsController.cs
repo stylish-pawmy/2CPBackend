@@ -15,9 +15,9 @@ using _2cpbackend.Models;
 public class EventsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public EventsController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+    public EventsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
     {
         this._context = context;
         this._userManager = userManager;
@@ -30,12 +30,12 @@ public class EventsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(GetModelErrors(ModelState.Values));
 
+        //Retrieve Logged-In user
         var user = await _userManager.GetUserAsync(HttpContext.User);
 
+        //User will never be null, this method needs authorization
         if (user == null)
             return Unauthorized();
-
-        var organizer = (ApplicationUser) user;
 
         //Creation
         var resource = new Event
@@ -45,11 +45,13 @@ public class EventsController : ControllerBase
             Description = data.Description,
             Price = data.Price,
             CoverPhoto = data.CoverPhoto,
-            Organizer = organizer
+            Organizer = user,
+            Attendees = new List<ApplicationUser>()
         };
         
-        await _context.AddAsync(resource);
-
+        //Add resource to database
+        user.OrganizedByUser.Add(resource);
+        await _context.Events.AddAsync(resource);
         await _context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetEvent), new {Id = resource.Id}, resource);

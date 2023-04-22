@@ -19,5 +19,5 @@ public class Event
     public ApplicationUser Organizer { get; set; } = null!;
     //Attendees
     public List<ApplicationUser> Attendees { get; set; } = new List<ApplicationUser>();
-    public string? CoverPhoto { get; set; }
+    [DataType(DataType.Url)] public string? CoverPhoto { get; set; }
 }

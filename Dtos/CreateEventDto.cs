@@ -13,5 +13,5 @@ public class CreateEventDto
     //Price
     [Required][DataType(DataType.Currency)] public Double Price { get; set; }
     //Cover
-    public string? CoverPhoto { get; set; }
+    [DataType(DataType.Url)] public string? CoverPhoto { get; set; }
 }
