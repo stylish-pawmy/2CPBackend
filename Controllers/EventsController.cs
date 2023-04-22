@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using NetTopologySuite.Geometries;
 
 using _2cpbackend.Dtos;
 using _2cpbackend.Data;
@@ -46,7 +47,8 @@ public class EventsController : ControllerBase
             Price = data.Price,
             CoverPhoto = data.CoverPhoto,
             Organizer = user,
-            Attendees = new List<ApplicationUser>()
+            Attendees = new List<ApplicationUser>(),
+            Location = new Point(data.Location.Longitude, data.Location.Latitude)
         };
         
         //Add resource to database

@@ -20,4 +20,6 @@ public class Event
     //Attendees
     public List<ApplicationUser> Attendees { get; set; } = new List<ApplicationUser>();
     [DataType(DataType.Url)] public string? CoverPhoto { get; set; }
+    //Location
+    [Required] public Point Location { get; set; } = null!;
 }

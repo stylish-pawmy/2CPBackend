@@ -2,6 +2,8 @@ namespace _2cpbackend.Models;
 
 using System.ComponentModel.DataAnnotations;
 
+using _2cpbackend.Models;
+
 public class CreateEventDto
 {
     //Title
@@ -14,4 +16,6 @@ public class CreateEventDto
     [Required][DataType(DataType.Currency)] public Double Price { get; set; }
     //Cover
     [DataType(DataType.Url)] public string? CoverPhoto { get; set; }
+    //Location
+    [Required] public Coordinates Location { get; set; } = null!;
 }
