@@ -2,20 +2,23 @@ namespace _2cpbackend.Models;
 
 using System.ComponentModel.DataAnnotations;
 
-using _2cpbackend.Models;
-
-public class CreateEventDto
+public class EventDetailsDto
 {
+    //Id
+    [Required] public Guid Id { get; set; }
     //Title
     [Required] public string Title { get; set; } = null!;
     //Date
-    [Required][DataType(DataType.DateTime)] public DateTime Date { get; set; }
+    [Required][DataType(DataType.DateTime)] public DateTime DateAndTime { get; set; }
     //Description
     public string? Description { get; set; }
     //Price
     [Required][DataType(DataType.Currency)] public Double Price { get; set; }
-    //Cover
-    [DataType(DataType.Url)] public string? CoverPhoto { get; set; }
+    //Cover File
+    public string? CoverUrl { get; set; }
     //Location
     [Required] public Coordinates Location { get; set; } = null!;
+    //OrganizerDetails
+    [Required] public string? OrganizerUserName { get; set; } = null!;
+    [Required] public string? OrganizerId { get; set; } = null!;
 }
