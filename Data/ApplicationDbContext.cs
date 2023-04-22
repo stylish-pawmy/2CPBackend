@@ -22,6 +22,8 @@ public class ApplicationDbContext : IdentityDbContext
         .HasMany(e => e.Attendees).WithMany(u => u.AttendedByUser);
         builder.Entity<Event>()
         .HasOne(e => e.Organizer).WithMany(u => u.OrganizedByUser);
+        builder.Entity<Event>()
+        .HasMany(e => e.BanList);
     }
 
     public DbSet<ApplicationUser> ApplicationUsers { get; set; } = null!;

@@ -66,6 +66,8 @@ public class SubscriptionsController : ControllerBase
         
         if (_event == null) return NotFound();
 
+        if (_event.BanList.Contains(user)) return Unauthorized("User is banned from attending this event.");
+
         if (user.AttendedByUser.Contains(_event)) return BadRequest("User already subscribed to event.");
 
         _event.Attendees.Add(user);
@@ -121,5 +123,72 @@ public class SubscriptionsController : ControllerBase
         await _context.SaveChangesAsync();
         
         return Ok("User kicked from event.");
+    }
+
+    [HttpPost("BanUser")]
+    public async Task<ActionResult> BanUserAsync(String subjectId, Guid eventId)
+    {
+        var _event = _context.Events
+        .Include(e => e.Organizer)
+        .Include(e => e.BanList)
+        .SingleOrDefault(e => e.Id == eventId);
+
+        var user = await  _userManager.GetUserAsync(HttpContext.User);
+        var subject = _context.ApplicationUsers.Include(u => u.AttendedByUser).SingleOrDefault(u => u.Id == subjectId);
+
+        //user is not null because method requires authentication
+        if (user == null) return StatusCode(500, "User authenticated but server unable to retrieve user reference.");
+        
+        if ((_event != null) && (user.Id != _event.Organizer.Id)) return Unauthorized("You do not own this event.");
+
+        if (_event == null) return NotFound("Event not found.");
+
+        if (subject == null) return NotFound("User not found.");
+
+        if (user.Id == subject.Id) return BadRequest("Organizer cannot be banned from event.");
+
+        if (_event.BanList.Contains(subject)) return BadRequest("User already banned from event.");
+
+        //Kick from event if already attending
+        if (subject.AttendedByUser.Contains(_event))
+        {
+            _event.Attendees.Remove(subject);
+            subject.AttendedByUser.Remove(_event);
+        }
+
+        _event.BanList.Add(subject);
+
+        await _context.SaveChangesAsync();
+        
+        return Ok("User banned from event.");
+    }
+
+    [HttpPost("UnbanUser")]
+    public async Task<ActionResult> UnbanUserAsync(String subjectId, Guid eventId)
+    {
+        var _event = _context.Events
+        .Include(e => e.Organizer)
+        .Include(e => e.BanList)
+        .SingleOrDefault(e => e.Id == eventId);
+
+        var user = await  _userManager.GetUserAsync(HttpContext.User);
+        var subject = _context.ApplicationUsers.Include(u => u.AttendedByUser).SingleOrDefault(u => u.Id == subjectId);
+
+        //user is not null because method requires authentication
+        if (user == null) return StatusCode(500, "User authenticated but server unable to retrieve user reference.");
+        
+        if ((_event != null) && (user.Id != _event.Organizer.Id)) return Unauthorized("You do not own this event.");
+
+        if (_event == null) return NotFound("Event not found.");
+
+        if (subject == null) return NotFound("User not found.");
+
+        if (!_event.BanList.Contains(subject)) return BadRequest("User is not banned from event.");
+
+        _event.BanList.Remove(subject);
+
+        await _context.SaveChangesAsync();
+        
+        return Ok("User Unbanned from event.");
     }
 }
