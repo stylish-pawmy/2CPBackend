@@ -1,4 +1,4 @@
-namespace _2cpbackend.Dtos;
+namespace _2cpbackend.Models;
 
 using System.ComponentModel.DataAnnotations;
 

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-using _2cpbackend.Dtos;
 using _2cpbackend.Models;
 using _2cpbackend.Services;
 
@@ -27,7 +26,7 @@ public class AccountController : Controller
     }
 
     [HttpPost("Register")]
-    public async Task<ActionResult<RegisterDto>> RegisterAsync(RegisterDto data)
+    public async Task<ActionResult<RegisterDto>> RegisterAsync([FromForm][FromBody] RegisterDto data)
     {
         if (!ModelState.IsValid)
         {
@@ -48,6 +47,21 @@ public class AccountController : Controller
             OrganizedByUser = new List<Event>()
         };
 
+        //Uploading profile picture
+        if (data.ProfilePictureFile != null && data.ProfilePictureFile.Length > 0)
+        {
+            var pictureName = user.Id + Path.GetExtension(data.ProfilePictureFile.FileName);
+            var picturePath = Path.Combine("Data/ProfilePictures", pictureName);
+            var absolutePicturePath = Path.GetFullPath(picturePath);
+
+            using (var fileStream = new FileStream(absolutePicturePath, FileMode.Create))
+            {
+                await data.ProfilePictureFile.CopyToAsync(fileStream);
+            }
+
+            user.ProfilePicture = pictureName;
+        }
+
         //Creating the user
         var result = await _userManager.CreateAsync(user, data.Password);
 
@@ -57,7 +71,7 @@ public class AccountController : Controller
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             await _emailService.SendEmail(data.Email, "Email Confirmation", code);
             await _signInManager.SignInAsync(user, false);
-            return Ok();
+            return Created("Users/GetUser", new {userId = user.Id});
         }
         
         AddModelErrors(result);
