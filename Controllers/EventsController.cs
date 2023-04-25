@@ -101,7 +101,6 @@ public class EventsController : ControllerBase
                 Longitude = resource.Location.X,
                 Latitude = resource.Location.Y
             },
-            OrganizerUserName = resource.Organizer.UserName,
             OrganizerId = resource.Organizer.Id,
             NumberOfSubscribers = resource.Attendees.Count()
         };
