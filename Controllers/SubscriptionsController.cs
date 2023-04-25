@@ -58,7 +58,7 @@ public class SubscriptionsController : ControllerBase
     [HttpPost("Subscribe")]
     public async Task<ActionResult> SubscribeAsync(Guid eventId)
     {
-        var _event = _context.Events.Include(e => e.Attendees).SingleOrDefault(e => e.Id == eventId);
+        var _event = await _context.Events.Include(e => e.Attendees).SingleOrDefaultAsync(e => e.Id == eventId);
         var user = await  _userManager.GetUserAsync(HttpContext.User);
 
         //user is not null because method requires authentication

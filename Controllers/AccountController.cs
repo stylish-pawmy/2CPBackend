@@ -34,7 +34,7 @@ public class AccountController : Controller
         }
 
         if((await _userManager.FindByEmailAsync(data.Email)) != null) return Conflict("Email already taken.");
-        if((await _userManager.FindByEmailAsync(data.Email)) != null) return Conflict("Email already taken.");
+        if((await _userManager.FindByEmailAsync(data.UserName)) != null) return Conflict("UserName already taken.");
 
         var user = new ApplicationUser
         {
@@ -43,6 +43,7 @@ public class AccountController : Controller
             BirthDate = data.BirthDate.ToUniversalTime(),
             FirstName = data.FirstName,
             LastName = data.LastName,
+            Biography = String.Empty,
             AttendedByUser = new List<Event>(),
             OrganizedByUser = new List<Event>()
         };

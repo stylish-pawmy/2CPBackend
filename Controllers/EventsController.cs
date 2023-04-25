@@ -1,7 +1,6 @@
 namespace _2cpbackend.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.StaticFiles;
@@ -10,6 +9,7 @@ using NetTopologySuite.Geometries;
 
 using _2cpbackend.Data;
 using _2cpbackend.Models;
+using _2cpbackend.Utilities;
 
 [ApiController]
 [Route("api/[Controller]")]
@@ -30,7 +30,7 @@ public class EventsController : ControllerBase
     public async Task<ActionResult> CreateEventAsync([FromForm][FromBody]CreateEditEventDto data)
     {
         if (!ModelState.IsValid)
-            return BadRequest(GetModelErrors(ModelState.Values));
+            return BadRequest(ModelUtils.GetModelErrors(ModelState.Values));
 
         //Retrieve Logged-In user
         var user = await _userManager.GetUserAsync(HttpContext.User);
@@ -217,7 +217,7 @@ public class EventsController : ControllerBase
         
         //New data is valid?
         if (!ModelState.IsValid)
-            return BadRequest(GetModelErrors(ModelState.Values));
+            return BadRequest(ModelUtils.GetModelErrors(ModelState.Values));
         
         //Edit event info
         resource.Title = data.Title;
@@ -257,20 +257,5 @@ public class EventsController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(resource);
-    }
-
-    //Utilities
-    [NonAction]
-    public string GetModelErrors(ModelStateDictionary.ValueEnumerable values)
-    {
-        string body = string.Empty;
-        foreach (ModelStateEntry entry in values)
-        {
-            foreach(ModelError error in entry.Errors)
-            {
-                body += error.ErrorMessage + "\n";
-            }
-        }
-        return body;
     }
 }
