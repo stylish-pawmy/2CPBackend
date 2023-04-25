@@ -40,11 +40,12 @@ public class UsersController : ControllerBase
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
             Biography = user.Biography,
-            UserName = user.UserName,
+            UserName = user.UserName
         };
 
         //Adding profile picture link
-        resource.ProfilePictureUrl = Url.ActionLink("ProfilePicture", "Users", new {pictureName = user.ProfilePicture});
+        if (user.ProfilePicture == null) resource.ProfilePictureUrl = null;
+        else resource.ProfilePictureUrl = Url.ActionLink("ProfilePicture", "Users", new {picture = user.ProfilePicture});
         return Ok(resource);
     }
 
@@ -98,12 +99,20 @@ public class UsersController : ControllerBase
         //Upload new picture
         if (newPicture != null && newPicture.Length > 0)
         {
-            var pictureName = user.Id + Path.GetExtension(newPicture.FileName);
-            var picturePath = "Data/ProfilePictures/" + user.ProfilePicture;
-            var absolutePicturePath = Path.GetFullPath(picturePath);
+            string pictureName;
+            string picturePath;
+            string absolutePicturePath;
 
-            //Delete old profile picture
-            System.IO.File.Delete(absolutePicturePath);
+            pictureName = user.Id + Path.GetExtension(newPicture.FileName);
+
+            if (user.ProfilePicture != null)
+            {
+                picturePath = "Data/ProfilePictures/" + user.ProfilePicture;
+                absolutePicturePath = Path.GetFullPath(picturePath);
+
+                //Delete old profile picture
+                System.IO.File.Delete(absolutePicturePath);
+            }
 
             picturePath = "Data/ProfilePictures/" + pictureName;
             absolutePicturePath = Path.GetFullPath(picturePath);
@@ -114,9 +123,31 @@ public class UsersController : ControllerBase
             }
 
             user.ProfilePicture = pictureName;
+            await _userManager.UpdateAsync(user);
         }
 
         return Ok(Url.ActionLink("ProfilePicture", "Users", new {picture = user.ProfilePicture}));
     }
 
+    [HttpDelete("RemovePicture")]
+    public async Task<ActionResult> RemovePictureAsync()
+    {
+        var user = await _userManager.GetUserAsync(HttpContext.User);
+
+        if (!ModelState.IsValid) return BadRequest(ModelUtils.GetModelErrors(ModelState.Values));
+        if (user == null) return StatusCode(500, "User reference should not be null.");
+
+        if (user.ProfilePicture == null) return BadRequest("User does not have a profile picture.");
+
+        //Get picture path
+        var picturePath = "Data/ProfilePictures/" + user.ProfilePicture;
+        var absolutePicturePath = Path.GetFullPath(picturePath);
+
+        //Delete picture
+        System.IO.File.Delete(absolutePicturePath);
+        user.ProfilePicture = null;
+        await _userManager.UpdateAsync(user);
+
+        return NoContent();
+    }
 }
