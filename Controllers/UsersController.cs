@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Azure.Storage.Blobs;
+using Azure.Storage;
 
 using _2cpbackend.Models;
 using _2cpbackend.Utilities;
@@ -45,7 +47,7 @@ public class UsersController : ControllerBase
 
         //Adding profile picture link
         if (user.ProfilePicture == null) resource.ProfilePictureUrl = null;
-        else resource.ProfilePictureUrl = Url.ActionLink("ProfilePicture", "Users", new {picture = user.ProfilePicture});
+        else resource.ProfilePictureUrl = user.ProfilePicture;
         return Ok(resource);
     }
 
@@ -99,34 +101,24 @@ public class UsersController : ControllerBase
         //Upload new picture
         if (newPicture != null && newPicture.Length > 0)
         {
-            string pictureName;
-            string picturePath;
-            string absolutePicturePath;
+            BlobContainerClient container = new BlobContainerClient(
+                "DefaultEndpointsProtocol=https;AccountName=2cpbackendstore;AccountKey=4o932Fjoevj8lyAtU7533t1VE6oI0x8oBCvUCNRZOsL9UaBBtFNeqmQqKoZTqatnErkjhSuFtEEP+ASt7zQ5bw==;EndpointSuffix=core.windows.net",
+                "ProfilePictures"
+            );
 
-            pictureName = user.Id + Path.GetExtension(newPicture.FileName);
+            string pictureName = user.Id + Path.GetExtension(newPicture.FileName);
+            BlobClient blob = container.GetBlobClient(pictureName);
 
-            if (user.ProfilePicture != null)
+            using (Stream stream = newPicture.OpenReadStream())
             {
-                picturePath = "Data/ProfilePictures/" + user.ProfilePicture;
-                absolutePicturePath = Path.GetFullPath(picturePath);
-
-                //Delete old profile picture
-                System.IO.File.Delete(absolutePicturePath);
+                await blob.UploadAsync(stream);
             }
 
-            picturePath = "Data/ProfilePictures/" + pictureName;
-            absolutePicturePath = Path.GetFullPath(picturePath);
-
-            using (FileStream fileStream = new FileStream(absolutePicturePath, FileMode.Create))
-            {
-                await newPicture.CopyToAsync(fileStream);
-            }
-
-            user.ProfilePicture = pictureName;
+            user.ProfilePicture = blob.Uri.AbsoluteUri;
             await _userManager.UpdateAsync(user);
         }
 
-        return Ok(Url.ActionLink("ProfilePicture", "Users", new {picture = user.ProfilePicture}));
+        return Ok(user.ProfilePicture);
     }
 
     [HttpDelete("RemovePicture")]
