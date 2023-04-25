@@ -24,6 +24,8 @@ public class ApplicationDbContext : IdentityDbContext
         .HasOne(e => e.Organizer).WithMany(u => u.OrganizedByUser);
         builder.Entity<Event>()
         .HasMany(e => e.BanList);
+        builder.Entity<ApplicationUser>()
+        .HasMany(u => u.SavedEvents);
     }
 
     public DbSet<ApplicationUser> ApplicationUsers { get; set; } = null!;

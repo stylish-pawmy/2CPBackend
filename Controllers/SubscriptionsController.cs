@@ -199,30 +199,93 @@ public class SubscriptionsController : ControllerBase
 
         if (user == null) return NotFound();
 
-        var resource = new List<Guid>();
-
-        foreach (Event e in user.OrganizedByUser)
-            resource.Add(e.Id);
-        
-        return resource;
+        return Ok(user.OrganizedByUser.Select(e => e.Id));
     }
 
     [HttpGet("SubscribedToEventList")]
     public async Task<ActionResult<IEnumerable<Guid>>> GetSubscribedToEventListAsync()
     {
         var user = await _userManager.GetUserAsync(HttpContext.User);
+
+        if (user == null) return Unauthorized();
+        
+        user = await _userManager.Users
+        .Include(u => u.AttendedByUser)
+        .SingleOrDefaultAsync(u => u.Id == user.Id);
         
         if (user == null) return StatusCode(500, "User reference should not be null.");
 
-        var userDb = await  _context.ApplicationUsers
-        .Include(u => u.AttendedByUser)
+        return Ok(user.AttendedByUser.Select(e => e.Id));
+    }
+    
+    [HttpPost("SaveEvent")]
+    public async Task<ActionResult> SaveEventAsync(Guid eventId)
+    {
+        //Load user reference
+        var user = await _userManager.GetUserAsync(HttpContext.User);
+
+        if (user == null) return Unauthorized();
+
+        user = await _userManager.Users
+        .Include(u => u.OrganizedByUser)
         .SingleOrDefaultAsync(u => u.Id == user.Id);
 
-        var resource = new List<Guid>();
+        if (user == null) return StatusCode(500, "User reference should not be null.");
 
-        foreach (Event e in user.OrganizedByUser)
-            resource.Add(e.Id);
+        //Save event
+        var resource = await _context.Events.SingleOrDefaultAsync(e => e.Id == eventId);
         
-        return resource;
+        if (resource == null) return NotFound();
+
+        if (user.SavedEvents.Contains(resource)) return BadRequest("Event already saved by user.");
+
+        user.SavedEvents.Add(resource);
+        await _userManager.UpdateAsync(user);
+
+        return Ok("Event saved.");
+    }
+
+    [HttpPost("UnsaveEvent")]
+    public async Task<ActionResult> UnsaveEventAsync(Guid eventId)
+    {
+        //Load user reference
+        var user = await _userManager.GetUserAsync(HttpContext.User);
+
+        if (user == null) return Unauthorized();
+
+        user = await _userManager.Users
+        .Include(u => u.OrganizedByUser)
+        .SingleOrDefaultAsync(u => u.Id == user.Id);
+
+        if (user == null) return StatusCode(500, "User reference should not be null.");
+
+        //Unsave event
+        var resource = await _context.Events.SingleOrDefaultAsync(e => e.Id == eventId);
+        
+        if (resource == null) return NotFound();
+
+        if (!user.SavedEvents.Contains(resource)) return BadRequest("Event not saved by user before.");
+
+        user.SavedEvents.Remove(resource);
+        await _userManager.UpdateAsync(user);
+
+        return Ok("Event removed from user saved events list.");
+    }
+
+    [HttpGet("SavedEventsList")]
+    public async Task<ActionResult<IEnumerable<Guid>>> GetSavedEventsList()
+    {
+        //Load user reference
+        var user = await _userManager.GetUserAsync(HttpContext.User);
+
+        if (user == null) return Unauthorized();
+
+        user = await _userManager.Users
+        .Include(u => u.OrganizedByUser)
+        .SingleOrDefaultAsync(u => u.Id == user.Id);
+
+        if (user == null) return StatusCode(500, "User reference should not be null.");
+
+        return Ok(user.SavedEvents.Select(e => e.Id));
     }
 }
