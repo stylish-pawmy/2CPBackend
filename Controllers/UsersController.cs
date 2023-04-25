@@ -119,38 +119,4 @@ public class UsersController : ControllerBase
         return Ok(Url.ActionLink("ProfilePicture", "Users", new {picture = user.ProfilePicture}));
     }
 
-    [HttpGet("OrganizedEventList")]
-    public async Task<ActionResult<IEnumerable<Guid>>> GetOrganizedEventAsync(string Id)
-    {
-        var user = await  _context.ApplicationUsers.Include(u => u.OrganizedByUser).SingleOrDefaultAsync(u => u.Id == Id);
-
-        if (user == null) return NotFound();
-
-        var resource = new List<Guid>();
-
-        foreach (Event e in user.OrganizedByUser)
-            resource.Add(e.Id);
-        
-        return resource;
-    }
-
-    [HttpGet("SubscribedToEventList")]
-    public async Task<ActionResult<IEnumerable<Guid>>> GetSubscribedToEventListAsync()
-    {
-        var user = await _userManager.GetUserAsync(HttpContext.User);
-        
-        if (user == null) return StatusCode(500, "User reference should not be null.");
-
-        var userDb = await  _context.ApplicationUsers
-        .Include(u => u.AttendedByUser)
-        .SingleOrDefaultAsync(u => u.Id == user.Id);
-
-        var resource = new List<Guid>();
-
-        foreach (Event e in user.OrganizedByUser)
-            resource.Add(e.Id);
-        
-        return resource;
-    }
-
 }
