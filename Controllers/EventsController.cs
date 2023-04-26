@@ -10,6 +10,7 @@ using NetTopologySuite.Geometries;
 using _2cpbackend.Data;
 using _2cpbackend.Models;
 using _2cpbackend.Utilities;
+using _2cpbackend.Services;
 
 [ApiController]
 [Route("api/[Controller]")]
@@ -18,11 +19,16 @@ public class EventsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IBlobStorage _blobStorage;
 
-    public EventsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+    public EventsController(
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager,
+        IBlobStorage blobStorage)
     {
         this._context = context;
         this._userManager = userManager;
+        this._blobStorage = blobStorage;
     }
 
     [Authorize]
@@ -56,15 +62,7 @@ public class EventsController : ControllerBase
         if (data.CoverFile != null && data.CoverFile.Length > 0)
         {
             var coverName = resource.Id.ToString() + Path.GetExtension(data.CoverFile.FileName);
-            var coverPath = Path.Combine("Data/EventCovers", coverName);
-            var absoluteCoverPath = Path.GetFullPath(coverPath);
-
-            using (var fileStream = new FileStream(absoluteCoverPath, FileMode.Create))
-            {
-                await data.CoverFile.CopyToAsync(fileStream);
-            }
-
-            resource.CoverPhoto = coverName;
+            resource.CoverPhoto = await _blobStorage.UploadBlobAsync("eventcovers", coverName, data.CoverFile);
         }
         
         //Add resource to database
@@ -72,7 +70,7 @@ public class EventsController : ControllerBase
         await _context.Events.AddAsync(resource);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetEvent), new {Id = resource.Id}, resource);
+        return CreatedAtAction(nameof(GetEvent), new {Id = resource.Id}, resource.Id);
     }
 
     [HttpGet("GetEvent")]
@@ -95,7 +93,7 @@ public class EventsController : ControllerBase
             DateAndTime = resource.DateAndTime,
             Description = resource.Description,
             Price = resource.Price,
-            CoverUrl = Url.ActionLink(nameof(EventCover), "Events", new {coverName = resource.CoverPhoto}),
+            CoverUrl = resource.CoverPhoto,
             Location = new _2cpbackend.Models.Coordinates
             {
                 Longitude = resource.Location.X,
@@ -144,29 +142,6 @@ public class EventsController : ControllerBase
         return Ok(data);
     }
 
-    [HttpGet("EventCover")]
-    public ActionResult EventCover(string coverName)
-    {
-        //cover name provided?
-        if (coverName == null)
-            return BadRequest("Please include a cover name.");
-        
-        var coverPath = Path.Combine("Data/EventCovers", coverName);
-        var absoluteCoverPath = Path.GetFullPath(coverPath);
-
-        var mimeType = new FileExtensionContentTypeProvider().TryGetContentType(coverName, out var mime)
-            ? mime
-            : "image/octet-extract";
-
-        //cover file exists?
-        if (!System.IO.File.Exists(absoluteCoverPath))
-            return NotFound();
-
-        var fileStream = new FileStream(absoluteCoverPath, FileMode.Open ,FileAccess.Read);
-
-        return File(fileStream, mimeType);
-    }
-
     [Authorize]
     [HttpDelete("CancelEvent")]
     public async Task<ActionResult> CancelEventAsync(Guid Id)
@@ -184,11 +159,7 @@ public class EventsController : ControllerBase
         
         //Remove cover image
         if (resource.CoverPhoto != null)
-        {
-            var coverPath = Path.Combine("Data/EventCovers", resource.CoverPhoto);
-            var absoluteCoverPath = Path.GetFullPath(coverPath);
-            System.IO.File.Delete(absoluteCoverPath);
-        }
+            await _blobStorage.DeleteBlobAsync("eventcovers", Path.GetFileName(resource.CoverPhoto));
 
         //Delete from tables
         _context.Events.Remove(resource);
@@ -225,36 +196,38 @@ public class EventsController : ControllerBase
         resource.Price = data.Price;
         resource.Description = data.Description;
 
-        //Delete old cover if existent
-        string coverName;
-        string coverPath;
-        string absoluteCoverPath;
+        await _context.SaveChangesAsync();
 
+        return Ok(resource);
+    }
+
+    [HttpPut("UpdateCover")]
+    public async Task<ActionResult> UpdateCoverAsync(Guid eventId, IFormFile newCover)
+    {
+        var resource = _context.Events.Include(e => e.Organizer).SingleOrDefault(e => e.Id == eventId);
+        var user = await _userManager.GetUserAsync(HttpContext.User);
+
+        //User is organizer? (user not null because requires authentication)
+        if ((user != null) && (resource != null) && (user.Id != resource.Organizer.Id))
+            return Unauthorized("You do not own this resource.");
+
+        //Resource not found
+        if (resource == null)
+            return NotFound();
+        
+        //Delete old cover if existent
         if (resource.CoverPhoto != null)
-        {
-            coverPath = Path.Combine("Data/EventCovers", resource.CoverPhoto);
-            absoluteCoverPath = Path.GetFullPath(coverPath);
-            System.IO.File.Delete(absoluteCoverPath);
-            resource.CoverPhoto = null;
-        }
+            await _blobStorage.DeleteBlobAsync("eventcovers", Path.GetFileName(resource.CoverPhoto));
 
         //Upload new cover if existent
-        if (data.CoverFile != null && data.CoverFile.Length > 0)
+        if (newCover != null && newCover.Length > 0)
         {
-            coverName = resource.Id.ToString() + Path.GetExtension(data.CoverFile.FileName);
-            coverPath = Path.Combine("Data/EventCovers", coverName);
-            absoluteCoverPath = Path.GetFullPath(coverPath);
-
-            using (var fileStream = new FileStream(absoluteCoverPath, FileMode.Create))
-            {
-                await data.CoverFile.CopyToAsync(fileStream);
-            }
-
-            resource.CoverPhoto = coverName;
+            var coverName = resource.Id.ToString() + Path.GetExtension(newCover.FileName);
+            resource.CoverPhoto = await _blobStorage.UploadBlobAsync("eventcovers", coverName, newCover);
         }
 
         await _context.SaveChangesAsync();
 
-        return Ok(resource);
+        return Ok(resource.CoverPhoto);
     }
 }

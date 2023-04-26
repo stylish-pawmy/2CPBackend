@@ -17,9 +17,10 @@ builder.Services.AddControllers()
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("Default"), o => o.UseNetTopologySuite())
+    options.UseNpgsql(builder.Configuration.GetConnectionString("postgresDb"), o => o.UseNetTopologySuite())
     );
 builder.Services.AddScoped<IEmailService, MailJetEmailService>();
+builder.Services.AddScoped<IBlobStorage, AzureBlobStorage>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
