@@ -15,14 +15,17 @@ public class AccountController : Controller
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IEmailService _emailService;
     private readonly Random random = new Random();
+    private readonly IBlobStorage _blobStorage;
 
     public AccountController(UserManager<ApplicationUser> userManager,
                             SignInManager<ApplicationUser> signInManager,
-                            IEmailService emailService)
+                            IEmailService emailService,
+                            IBlobStorage blobStorage)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _emailService = emailService;
+        _blobStorage = blobStorage;
     }
 
     [HttpPost("Register")]
@@ -52,15 +55,7 @@ public class AccountController : Controller
         if (data.ProfilePictureFile != null && data.ProfilePictureFile.Length > 0)
         {
             var pictureName = user.Id + Path.GetExtension(data.ProfilePictureFile.FileName);
-            var picturePath = Path.Combine("Data/ProfilePictures", pictureName);
-            var absolutePicturePath = Path.GetFullPath(picturePath);
-
-            using (var fileStream = new FileStream(absolutePicturePath, FileMode.Create))
-            {
-                await data.ProfilePictureFile.CopyToAsync(fileStream);
-            }
-
-            user.ProfilePicture = pictureName;
+            user.ProfilePicture = await _blobStorage.UploadBlobAsync("profilepictures", pictureName, data.ProfilePictureFile);
         }
 
         //Creating the user
