@@ -20,4 +20,7 @@ public class EventDetailsDto
     public Coordinates Location { get; set; } = null!;
     public string? OrganizerId { get; set; } = null!;
     public int NumberOfSubscribers { get; set; }
+    //Category
+    public string CategoryName { get; set; } = null!;
+    public int CategoryId { get; set; }
 }

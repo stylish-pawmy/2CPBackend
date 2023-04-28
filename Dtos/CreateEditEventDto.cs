@@ -16,4 +16,6 @@ public class CreateEditEventDto
     public IFormFile? CoverFile { get; set; }
     //Location
     [Required] public Coordinates Location { get; set; } = null!;
+    //Category
+    [Required] public int CategoryId { get; set; }
 }

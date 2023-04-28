@@ -30,7 +30,7 @@ public class ApplicationDbContext : IdentityDbContext
         .HasMany(c => c.Events).WithOne(e => e.Category);
     }
 
-    public DbSet<ApplicationUser> ApplicationUsers { get; set; }
-    public DbSet<Event> Events { get; set; }
-    public DbSet<EventCategory> Categories { get; set; }
+    public DbSet<ApplicationUser> ApplicationUsers { get; set; } = null!;
+    public DbSet<Event> Events { get; set; } = null!;
+    public DbSet<EventCategory> Categories { get; set; } = null!;
 }

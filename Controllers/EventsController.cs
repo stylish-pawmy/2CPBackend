@@ -45,6 +45,13 @@ public class EventsController : ControllerBase
         if (user == null)
             return Unauthorized();
 
+        var category = await _context.Categories
+        .Include(c => c.Events)
+        .SingleOrDefaultAsync(c => c.Id == data.CategoryId);
+
+        if (category == null)
+            return BadRequest("Invalid category");
+
         //Creation
         var resource = new Event
         {
@@ -55,8 +62,12 @@ public class EventsController : ControllerBase
             Price = data.Price,
             Organizer = user,
             Attendees = new List<ApplicationUser>(),
-            Location = new Point(data.Location.Longitude, data.Location.Latitude)
+            Location = new Point(data.Location.Longitude, data.Location.Latitude),
+            Category = category
         };
+
+        //Add to category index
+        category.Events.Add(resource);
 
         //Upload event cover
         if (data.CoverFile != null && data.CoverFile.Length > 0)
@@ -79,6 +90,7 @@ public class EventsController : ControllerBase
         var resource = _context.Events
         .Include(e => e.Organizer)
         .Include(e => e.Attendees)
+        .Include(e => e.Category)
         .SingleOrDefault(e => e.Id == Id);
 
         //Resource not found
@@ -100,7 +112,9 @@ public class EventsController : ControllerBase
                 Latitude = resource.Location.Y
             },
             OrganizerId = resource.Organizer.Id,
-            NumberOfSubscribers = resource.Attendees.Count()
+            NumberOfSubscribers = resource.Attendees.Count(),
+            CategoryId = resource.Category.Id,
+            CategoryName = resource.Category.Name
         };
 
         return Ok(data);
@@ -146,7 +160,10 @@ public class EventsController : ControllerBase
     [HttpDelete("CancelEvent")]
     public async Task<ActionResult> CancelEventAsync(Guid Id)
     {
-        var resource = _context.Events.Include(e => e.Organizer).SingleOrDefault(e => e.Id == Id);
+        var resource = _context.Events
+        .Include(e => e.Organizer)
+        .Include(e => e.Category)
+        .SingleOrDefault(e => e.Id == Id);
         var user = await _userManager.GetUserAsync(HttpContext.User);
 
         //Check if user is organizer, user not null because requires authentication
@@ -156,7 +173,7 @@ public class EventsController : ControllerBase
         //Resource not found
         if (resource == null)
             return NotFound();
-        
+
         //Remove cover image
         if (resource.CoverPhoto != null)
             await _blobStorage.DeleteBlobAsync("eventcovers", Path.GetFileName(resource.CoverPhoto));
@@ -164,6 +181,14 @@ public class EventsController : ControllerBase
         //Delete from tables
         _context.Events.Remove(resource);
         resource.Organizer.OrganizedByUser.Remove(resource);
+
+        //Delete from category index
+        var category = await _context.Categories
+        .Include(c => c.Events)
+        .SingleOrDefaultAsync(c => c.Id == resource.Category.Id);
+
+        if (category == null) return StatusCode(500, "Category should not be null.");
+        category.Events.Remove(resource);
 
         await _context.SaveChangesAsync();
 
@@ -174,8 +199,14 @@ public class EventsController : ControllerBase
     [HttpPut("EditEvent")]
     public async Task<ActionResult> EditEventAsync(Guid Id, [FromForm][FromBody] CreateEditEventDto data)
     {
-        var resource = _context.Events.Include(e => e.Organizer).SingleOrDefault(e => e.Id == Id);
+        var resource = _context.Events
+        .Include(e => e.Organizer)
+        .Include(e => e.Category)
+        .ThenInclude(c => c.Events)
+        .SingleOrDefault(e => e.Id == Id);
         var user = await _userManager.GetUserAsync(HttpContext.User);
+        var newCategory = await _context.Categories.Include(c => c.Events).SingleOrDefaultAsync(c => c.Id == data.CategoryId);
+
 
         //User is organizer? (user not null because requires authentication)
         if ((user != null) && (resource != null) && (user.Id != resource.Organizer.Id))
@@ -184,10 +215,18 @@ public class EventsController : ControllerBase
         //Resource not found
         if (resource == null)
             return NotFound();
-        
+
+        //New category exists?
+        if (newCategory == null)
+            return BadRequest("Specified category not found");
+
         //New data is valid?
         if (!ModelState.IsValid)
             return BadRequest(ModelUtils.GetModelErrors(ModelState.Values));
+
+        //Edit category
+        resource.Category.Events.Remove(resource);
+        newCategory.Events.Add(resource);
         
         //Edit event info
         resource.Title = data.Title;
@@ -195,6 +234,7 @@ public class EventsController : ControllerBase
         resource.DateAndTime = data.DateAndTime.ToUniversalTime();
         resource.Price = data.Price;
         resource.Description = data.Description;
+        resource.Category = newCategory;
 
         await _context.SaveChangesAsync();
 
