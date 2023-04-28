@@ -23,4 +23,5 @@ public class Event
     [DataType(DataType.Url)] public string? CoverPhoto { get; set; }
     //Location
     [Required] public Point Location { get; set; } = null!;
+    [Required] public EventCategory Category { get; set; } = null!;
 }

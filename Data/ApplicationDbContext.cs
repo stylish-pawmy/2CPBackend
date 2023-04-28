@@ -26,8 +26,11 @@ public class ApplicationDbContext : IdentityDbContext
         .HasMany(e => e.BanList);
         builder.Entity<ApplicationUser>()
         .HasMany(u => u.SavedEvents);
+        builder.Entity<EventCategory>()
+        .HasMany(c => c.Events).WithOne(e => e.Category);
     }
 
-    public DbSet<ApplicationUser> ApplicationUsers { get; set; } = null!;
-    public DbSet<Event> Events { get; set; } = null!;
+    public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+    public DbSet<Event> Events { get; set; }
+    public DbSet<EventCategory> Categories { get; set; }
 }
