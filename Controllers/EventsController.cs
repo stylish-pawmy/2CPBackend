@@ -3,7 +3,6 @@ namespace _2cpbackend.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 
@@ -269,5 +268,40 @@ public class EventsController : ControllerBase
         await _context.SaveChangesAsync();
 
         return Ok(resource.CoverPhoto);
+    }
+
+    [HttpGet("CategoryList")]
+    public ActionResult<List<EventCategory>> GetCategoryList()
+    {
+        return Ok(_context.Categories.Select(c => new {Id = c.Id, Name = c.Name}).ToList());
+    }
+
+    [HttpGet("EventsInCategoryList")]
+    public ActionResult<List<EventCategory>> GetEventsInCategoryList(int categoryId)
+    {
+        var category = _context.Categories
+        .Include(c => c.Events)
+        .SingleOrDefault(c => c.Id == categoryId);
+
+        if (category == null)
+            return NotFound();
+        
+        return Ok(category.Events.Select(e => e.Id).ToList());
+    }
+
+    [HttpGet("EventsInCategoryPage")]
+    public ActionResult<List<EventCategory>> GetEventsInCategoryPage(int categoryId, int startIndex, int endIndex)
+    {
+        var category = _context.Categories
+        .Include(c => c.Events)
+        .SingleOrDefault(c => c.Id == categoryId);
+
+        if (category == null)
+            return NotFound();
+        
+        var resource = category.Events.Select(e => e.Id).ToList();
+        var limit = Math.Max(resource.Count - 1, 0);
+
+        return Ok(resource.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)));
     }
 }
