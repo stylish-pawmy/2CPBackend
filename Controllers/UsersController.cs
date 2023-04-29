@@ -3,7 +3,7 @@ namespace _2cpbackend.Controllers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.EntityFrameworkCore;
 
 using _2cpbackend.Models;
 using _2cpbackend.Utilities;
@@ -120,4 +120,122 @@ public class UsersController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpPost("FollowUser")]
+    public async Task<ActionResult> FollowUserAsync(string subjectId)
+    {
+        //Get current user
+        var user = await _userManager.GetUserAsync(HttpContext.User);
+        if (user == null) return Unauthorized();
+
+        user = await _userManager.Users
+        .Include(u => u.Following)
+        .SingleOrDefaultAsync(u => u.Id == user.Id);
+        if (user == null) return StatusCode(500, "User reference not expected to be null.");
+
+        //Get subject to follow
+        var subject = await _userManager.Users
+        .Include(s => s.Followers)
+        .SingleOrDefaultAsync(s => s.Id == subjectId);
+        if (subject == null) return NotFound();
+
+        //Subject already followed?
+        if (user.Following.Contains(subject)) return BadRequest("User followed before.");
+
+        //User same as subject?
+        if (user.Id == subject.Id) return BadRequest("Users cannot follow themselves");
+
+        //Follow operation
+        user.Following.Add(subject);
+        subject.Followers.Add(user);
+
+        await _userManager.UpdateAsync(user);
+        await _context.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    [HttpPost("UnfollowUser")]
+    public async Task<ActionResult> UnfollowUserAsync(string subjectId)
+    {
+        //Get current user
+        var user = await _userManager.GetUserAsync(HttpContext.User);
+        if (user == null) return Unauthorized();
+
+        user = await _userManager.Users
+        .Include(u => u.Following)
+        .SingleOrDefaultAsync(u => u.Id == user.Id);
+        if (user == null) return StatusCode(500, "User reference not expected to be null.");
+
+        //Get subject to follow
+        var subject = await _userManager.Users
+        .Include(s => s.Followers)
+        .SingleOrDefaultAsync(s => s.Id == subjectId);
+        if (subject == null) return NotFound();
+
+        //Subject already followed?
+        if (!user.Following.Contains(subject)) return BadRequest("User not followed before.");
+
+        //Unfollow operation
+        user.Following.Remove(subject);
+        subject.Followers.Remove(user);
+
+        await _userManager.UpdateAsync(user);
+        await _context.SaveChangesAsync();
+
+        return Ok();
+    }
+
+    [HttpGet("FollowersList")]
+    public async Task<ActionResult<List<string>>> GetFollowersListAsync(string userId)
+    {
+        //Get user reference
+        var user = await _context.ApplicationUsers
+        .Include(u => u.Followers)
+        .SingleOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return NotFound();
+
+        return Ok(user.Followers.Select(u => u.Id));
+    }
+
+    [HttpGet("FollowersPage")]
+    public async Task<ActionResult<List<string>>> GetFollowersPageAsync(string userId, int startIndex, int endIndex)
+    {
+        //Get user reference
+        var user = await _context.ApplicationUsers
+        .Include(u => u.Followers)
+        .SingleOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return NotFound();
+
+        var limit = user.Followers.Count - 1;
+
+        return Ok(user.Followers.GetRange(Math.Max(0, startIndex), Math.Min(endIndex, limit)).Select(u => u.Id));
+    }
+
+    [HttpGet("FollowingList")]
+    public async Task<ActionResult<List<string>>> GetFollowingListAsync(string userId)
+    {
+        //Get user reference
+        var user = await _context.ApplicationUsers
+        .Include(u => u.Following)
+        .SingleOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return NotFound();
+
+        return Ok(user.Following.Select(u => u.Id));
+    }
+
+    [HttpGet("FollowingPage")]
+    public async Task<ActionResult<List<string>>> GetFollowingPageAsync(string userId, int startIndex, int endIndex)
+    {
+        //Get user reference
+        var user = await _context.ApplicationUsers
+        .Include(u => u.Following)
+        .SingleOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return NotFound();
+
+        var limit = user.Following.Count - 1;
+
+        return Ok(user.Following.GetRange(Math.Max(0, startIndex), Math.Min(endIndex, limit)).Select(u => u.Id));
+    }
+
 }
