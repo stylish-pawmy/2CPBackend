@@ -9,12 +9,9 @@ using Lucene.Net.Index;
 using Lucene.Net.Documents;
 using Lucene.Net.Util;
 
-using Microsoft.EntityFrameworkCore;
-
 using _2cpbackend.Models;
-using _2cpbackend.Data;
 
-public class SearchEngine
+public class SearchEngine : ISearchEngine
 {
     public readonly LuceneVersion Version = LuceneVersion.LUCENE_48;
     public IndexWriter Writer { get; } = null!;

@@ -1,6 +1,7 @@
 using _2cpbackend.Data;
 using _2cpbackend.Services;
 using _2cpbackend.Models;
+using _2cpbackend.Utilities;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
@@ -21,6 +22,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     );
 builder.Services.AddScoped<IEmailService, MailJetEmailService>();
 builder.Services.AddScoped<IBlobStorage, AzureBlobStorage>();
+builder.Services.AddScoped<ISearchEngine, SearchEngine>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
