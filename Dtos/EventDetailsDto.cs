@@ -23,4 +23,6 @@ public class EventDetailsDto
     //Category
     public string CategoryName { get; set; } = null!;
     public int CategoryId { get; set; }
+    //Date Added
+    public DateTime DateAdded { get; set; }
 }

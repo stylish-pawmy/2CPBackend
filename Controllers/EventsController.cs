@@ -65,7 +65,8 @@ public class EventsController : ControllerBase
             Organizer = user,
             Attendees = new List<ApplicationUser>(),
             Location = new Point(data.Location.Longitude, data.Location.Latitude),
-            Category = category
+            Category = category,
+            DateAdded = DateTime.Now.ToUniversalTime()
         };
 
         //Add to category index
@@ -121,7 +122,8 @@ public class EventsController : ControllerBase
             OrganizerId = resource.Organizer.Id,
             NumberOfSubscribers = resource.Attendees.Count(),
             CategoryId = resource.Category.Id,
-            CategoryName = resource.Category.Name
+            CategoryName = resource.Category.Name,
+            DateAdded = resource.DateAdded
         };
 
         return Ok(data);

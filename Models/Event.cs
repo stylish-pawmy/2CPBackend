@@ -24,4 +24,6 @@ public class Event
     //Location
     [Required] public Point Location { get; set; } = null!;
     [Required] public EventCategory Category { get; set; } = null!;
+    //Date Added
+    public DateTime DateAdded { get; set; }
 }
