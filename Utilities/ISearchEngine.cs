@@ -7,9 +7,9 @@ using _2cpbackend.Models;
 
 public interface ISearchEngine
 {
-    IndexWriter Writer { get; }
-
+    void GetWriter();
     void AddToIndex(Event source);
     void RemoveFromIndex(Event source);
     IEnumerable<string> SearchEvent(string query, int amount);
+    void DisposeWriter();
 }

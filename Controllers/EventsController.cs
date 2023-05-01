@@ -19,15 +19,18 @@ public class EventsController : ControllerBase
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IBlobStorage _blobStorage;
+    private readonly ISearchEngine _searchEngine;
 
     public EventsController(
         ApplicationDbContext context,
         UserManager<ApplicationUser> userManager,
-        IBlobStorage blobStorage)
+        IBlobStorage blobStorage,
+        ISearchEngine searchEngine)
     {
         this._context = context;
         this._userManager = userManager;
         this._blobStorage = blobStorage;
+        this._searchEngine = searchEngine;
     }
 
     [Authorize]
@@ -79,6 +82,11 @@ public class EventsController : ControllerBase
         user.OrganizedByUser.Add(resource);
         await _context.Events.AddAsync(resource);
         await _context.SaveChangesAsync();
+
+        //Add resource to search engine index
+        _searchEngine.GetWriter();
+        _searchEngine.AddToIndex(resource);
+        _searchEngine.DisposeWriter();
 
         return CreatedAtAction(nameof(GetEvent), new {Id = resource.Id}, resource.Id);
     }
@@ -190,6 +198,11 @@ public class EventsController : ControllerBase
         category.Events.Remove(resource);
 
         await _context.SaveChangesAsync();
+
+        //Delete from search engine index
+        _searchEngine.GetWriter();
+        _searchEngine.RemoveFromIndex(resource);
+        _searchEngine.DisposeWriter();
 
         return NoContent();
     }
@@ -303,5 +316,14 @@ public class EventsController : ControllerBase
         var limit = Math.Max(resource.Count - 1, 0);
 
         return Ok(resource.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)));
+    }
+
+    [HttpGet("SearchEvent")]
+    public ActionResult<IEnumerable<string>> SearchEvent(string query, int amount)
+    {   
+        _searchEngine.GetWriter();
+        var result = _searchEngine.SearchEvent(query, amount);
+        _searchEngine.DisposeWriter();
+        return Ok(result);
     }
 }
