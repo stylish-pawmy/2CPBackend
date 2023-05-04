@@ -76,7 +76,7 @@ public class AccountController : Controller
     }
 
     [HttpPost("ConfirmEmail")]
-    public async Task<ActionResult<ConfirmEmailDto>> ConfirmEmail(ConfirmEmailDto data)
+    public async Task<ActionResult<ConfirmEmailDto>> ConfirmEmail([FromForm][FromBody] ConfirmEmailDto data)
     {
         if(!ModelState.IsValid) return BadRequest("Invalid email confirmation data.");
         var user = await _userManager.FindByEmailAsync(data.Email);
@@ -98,7 +98,7 @@ public class AccountController : Controller
     }
 
     [HttpPost("Login")]
-    public async Task<ActionResult<LoginDto>> Login(LoginDto data)
+    public async Task<ActionResult<LoginDto>> Login([FromForm][FromBody] LoginDto data)
     {
         if (!ModelState.IsValid) return BadRequest("Invalid login data.");
         //Finding the user
@@ -115,7 +115,7 @@ public class AccountController : Controller
     }
 
     [HttpPost("ForgotPassword")]
-    public async Task<IActionResult> ForgotPassword(ForgotPasswordDto data)
+    public async Task<IActionResult> ForgotPassword([FromForm][FromBody] ForgotPasswordDto data)
     {
         var user =  await _userManager.FindByEmailAsync(data.Email);
         if (user != null)
@@ -129,7 +129,7 @@ public class AccountController : Controller
     }
 
     [HttpPost("ResetPassword")]
-    public async Task<ActionResult<ResetPasswordDto>> ResetPassword(ResetPasswordDto data)
+    public async Task<ActionResult<ResetPasswordDto>> ResetPassword([FromForm][FromBody] ResetPasswordDto data)
     {
         if(!ModelState.IsValid) return BadRequest("Invalid password format.");
 
