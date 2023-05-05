@@ -91,11 +91,11 @@ public class EventsController : ControllerBase
         _searchEngine.AddToIndex(resource);
         _searchEngine.DisposeWriter();
 
-        return CreatedAtAction(nameof(GetEvent), new {Id = resource.Id}, resource.Id);
+        return CreatedAtAction(nameof(GetEventDetails), new {Id = resource.Id}, resource.Id);
     }
 
-    [HttpGet("GetEvent")]
-    public ActionResult<EventDetailsDto> GetEvent(Guid Id)
+    [HttpGet("GetEventDetails")]
+    public ActionResult<EventDetailsDto> GetEventDetails(Guid Id)
     {
         var resource = _context.Events
         .Include(e => e.Organizer)
@@ -125,14 +125,16 @@ public class EventsController : ControllerBase
             NumberOfSubscribers = resource.Attendees.Count(),
             CategoryId = resource.Category.Id,
             CategoryName = resource.Category.Name,
-            DateAdded = resource.DateAdded
+            DateAdded = resource.DateAdded,
+            OrganizerName = resource.Organizer.UserName,
+            OrganizerProfilePicture = resource.Organizer.ProfilePicture
         };
 
         return Ok(data);
     }
 
     [HttpGet("GetEventsList")]
-    public ActionResult<IEnumerable<Guid>> GetEventsList()
+    public ActionResult<IEnumerable<EventDetailsDto>> GetEventsList()
     {
         var resource = _context.Events.ToList();
         //Resource not found
@@ -140,11 +142,34 @@ public class EventsController : ControllerBase
             return NotFound();
         
         //Resource found
-        var data = new List<Guid>();
+        var data = new List<EventDetailsDto>();
 
         foreach(Event _event in resource)
         {
-            data.Add(_event.Id);
+            //Event details object
+            var result = new EventDetailsDto
+            {
+                Id = _event.Id,
+                Title = _event.Title,
+                DateAndTime = _event.DateAndTime,
+                Description = _event.Description,
+                Price = _event.Price,
+                CoverUrl = _event.CoverPhoto,
+                Location = new _2cpbackend.Models.Coordinates
+                {
+                    Longitude = _event.Location.X,
+                    Latitude = _event.Location.Y
+                },
+                OrganizerId = _event.Organizer.Id,
+                NumberOfSubscribers = _event.Attendees.Count(),
+                CategoryId = _event.Category.Id,
+                CategoryName = _event.Category.Name,
+                DateAdded = _event.DateAdded,
+                OrganizerName = _event.Organizer.UserName,
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+            };
+            
+            data.Add(result);
         }
 
         return Ok(data);
@@ -157,11 +182,34 @@ public class EventsController : ControllerBase
         var limit = Math.Max(resource.Count - 1, 0);
         
         //Resource found
-        var data = new List<Guid>();
+        var data = new List<EventDetailsDto>();
 
         foreach(Event _event in resource.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)))
         {
-            data.Add(_event.Id);
+            //Event details object
+            var result = new EventDetailsDto
+            {
+                Id = _event.Id,
+                Title = _event.Title,
+                DateAndTime = _event.DateAndTime,
+                Description = _event.Description,
+                Price = _event.Price,
+                CoverUrl = _event.CoverPhoto,
+                Location = new _2cpbackend.Models.Coordinates
+                {
+                    Longitude = _event.Location.X,
+                    Latitude = _event.Location.Y
+                },
+                OrganizerId = _event.Organizer.Id,
+                NumberOfSubscribers = _event.Attendees.Count(),
+                CategoryId = _event.Category.Id,
+                CategoryName = _event.Category.Name,
+                DateAdded = _event.DateAdded,
+                OrganizerName = _event.Organizer.UserName,
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+            };
+            
+            data.Add(result);
         }
 
         return Ok(data);
@@ -315,7 +363,7 @@ public class EventsController : ControllerBase
     }
 
     [HttpGet("EventsInCategoryList")]
-    public ActionResult<List<EventCategory>> GetEventsInCategoryList(int categoryId)
+    public ActionResult<List<EventDetailsDto>> GetEventsInCategoryList(int categoryId)
     {
         var category = _context.Categories
         .Include(c => c.Events)
@@ -324,7 +372,37 @@ public class EventsController : ControllerBase
         if (category == null)
             return NotFound();
         
-        return Ok(category.Events.Select(e => e.Id).ToList());
+        var data = new List<EventDetailsDto>();
+
+        foreach (Event _event in category.Events)
+        {
+            //Event details object
+            var result = new EventDetailsDto
+            {
+                Id = _event.Id,
+                Title = _event.Title,
+                DateAndTime = _event.DateAndTime,
+                Description = _event.Description,
+                Price = _event.Price,
+                CoverUrl = _event.CoverPhoto,
+                Location = new _2cpbackend.Models.Coordinates
+                {
+                    Longitude = _event.Location.X,
+                    Latitude = _event.Location.Y
+                },
+                OrganizerId = _event.Organizer.Id,
+                NumberOfSubscribers = _event.Attendees.Count(),
+                CategoryId = _event.Category.Id,
+                CategoryName = _event.Category.Name,
+                DateAdded = _event.DateAdded,
+                OrganizerName = _event.Organizer.UserName,
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+            };
+            
+            data.Add(result);
+        }
+
+        return Ok(data);
     }
 
     [HttpGet("EventsInCategoryPage")]
@@ -337,18 +415,86 @@ public class EventsController : ControllerBase
         if (category == null)
             return NotFound();
         
-        var resource = category.Events.Select(e => e.Id).ToList();
-        var limit = Math.Max(resource.Count - 1, 0);
+        var limit = Math.Max(category.Events.Count - 1, 0);
 
-        return Ok(resource.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)));
+        var data = new List<EventDetailsDto>();
+
+        foreach (Event _event in category.Events.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)))
+        {
+            //Event details object
+            var result = new EventDetailsDto
+            {
+                Id = _event.Id,
+                Title = _event.Title,
+                DateAndTime = _event.DateAndTime,
+                Description = _event.Description,
+                Price = _event.Price,
+                CoverUrl = _event.CoverPhoto,
+                Location = new _2cpbackend.Models.Coordinates
+                {
+                    Longitude = _event.Location.X,
+                    Latitude = _event.Location.Y
+                },
+                OrganizerId = _event.Organizer.Id,
+                NumberOfSubscribers = _event.Attendees.Count(),
+                CategoryId = _event.Category.Id,
+                CategoryName = _event.Category.Name,
+                DateAdded = _event.DateAdded,
+                OrganizerName = _event.Organizer.UserName,
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+            };
+            
+            data.Add(result);
+        }
+
+        return Ok(data);
     }
 
     [HttpGet("SearchEvent")]
-    public ActionResult<IEnumerable<string>> SearchEvent(string query, int amount)
+    public async Task<ActionResult<IEnumerable<EventDetailsDto>>> SearchEvent(string query, int amount)
     {   
         _searchEngine.GetWriter();
-        var result = _searchEngine.SearchEvent(query, amount);
+        var hits = _searchEngine.SearchEvent(query, amount);
         _searchEngine.DisposeWriter();
-        return Ok(result);
+
+        var data = new List<EventDetailsDto>();
+
+        foreach (string eventId in hits)
+        {
+            //Event details object
+            var _event = await _context.Events
+            .Include(e => e.Organizer)
+            .Include(e => e.Attendees)
+            .Include(e => e.Location)
+            .SingleOrDefaultAsync(e => e.Id.ToString() == eventId);
+
+            if (_event == null) throw new NullReferenceException();
+
+            var result = new EventDetailsDto
+            {
+                Id = _event.Id,
+                Title = _event.Title,
+                DateAndTime = _event.DateAndTime,
+                Description = _event.Description,
+                Price = _event.Price,
+                CoverUrl = _event.CoverPhoto,
+                Location = new _2cpbackend.Models.Coordinates
+                {
+                    Longitude = _event.Location.X,
+                    Latitude = _event.Location.Y
+                },
+                OrganizerId = _event.Organizer.Id,
+                NumberOfSubscribers = _event.Attendees.Count(),
+                CategoryId = _event.Category.Id,
+                CategoryName = _event.Category.Name,
+                DateAdded = _event.DateAdded,
+                OrganizerName = _event.Organizer.UserName,
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+            };
+            
+            data.Add(result);
+        }
+
+        return Ok(data);
     }
 }

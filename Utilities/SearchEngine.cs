@@ -34,6 +34,7 @@ public class SearchEngine : ISearchEngine
             new StringField("Description", source.Description, Field.Store.YES),
             new StringField("OrganizerUserName", source.Organizer.UserName, Field.Store.YES),
             new StringField("OrganizerFullName", $"{source.Organizer.FirstName} {source.Organizer.LastName}", Field.Store.YES),
+            new StringField("Category", source.Category.Name, Field.Store.YES)
         };
 
         this.Writer.AddDocument(doc);

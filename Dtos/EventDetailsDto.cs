@@ -18,11 +18,15 @@ public class EventDetailsDto
     public string? CoverUrl { get; set; }
     //Location
     public Coordinates Location { get; set; } = null!;
-    public string? OrganizerId { get; set; } = null!;
+    //Organizer
+    public string OrganizerId { get; set; } = null!;
+    public string? OrganizerProfilePicture { get; set; }
+    public string? OrganizerName { get; set; }
     public int NumberOfSubscribers { get; set; }
     //Category
     public string CategoryName { get; set; } = null!;
     public int CategoryId { get; set; }
     //Date Added
     public DateTime DateAdded { get; set; }
+
 }
