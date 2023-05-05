@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 using _2cpbackend.Models;
 using _2cpbackend.Utilities;
@@ -32,9 +33,13 @@ public class UsersController : ControllerBase
     [HttpGet("GetUserDetails")]
     public async Task<ActionResult> GetUserDetailsAsync(string subjectId)
     {
-        var user = await _userManager.FindByIdAsync(subjectId);
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
 
-        if (user == null) return NotFound();
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
 
         if (user.Email == null || user.UserName == null) return StatusCode(500, "Identifiers should not be null.");
 
@@ -58,11 +63,15 @@ public class UsersController : ControllerBase
     [HttpPut("UpdateUserProfile")]
     public async Task<ActionResult> UpdateUserProfileAsync([FromForm][FromBody] EditUserProfileDto data)
     {
-        var user = await _userManager.GetUserAsync(HttpContext.User);
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
+
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
 
         if (!ModelState.IsValid) return BadRequest(ModelUtils.GetModelErrors(ModelState.Values));
-        
-        if (user == null) return StatusCode(500, "User reference should not be null.");
 
         user.FirstName = data.FirstName;
         user.LastName = data.LastName;
@@ -80,10 +89,15 @@ public class UsersController : ControllerBase
     [HttpPut("UpdatePicture")]
     public async Task<ActionResult> UpdatePictureAsync(IFormFile newPicture)
     {
-        var user = await _userManager.GetUserAsync(HttpContext.User);
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
+
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
 
         if (!ModelState.IsValid) return BadRequest(ModelUtils.GetModelErrors(ModelState.Values));
-        if (user == null) return StatusCode(500, "User reference should not be null.");
 
         //Delete old picture
         if (user.ProfilePicture != null)
@@ -106,10 +120,15 @@ public class UsersController : ControllerBase
     [HttpDelete("DeletePicture")]
     public async Task<ActionResult> DeletePictureAsync()
     {
-        var user = await _userManager.GetUserAsync(HttpContext.User);
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
+
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
 
         if (!ModelState.IsValid) return BadRequest(ModelUtils.GetModelErrors(ModelState.Values));
-        if (user == null) return StatusCode(500, "User reference should not be null.");
 
         if (user.ProfilePicture == null) return BadRequest("User does not have a profile picture.");
 
@@ -124,9 +143,13 @@ public class UsersController : ControllerBase
     [HttpPost("FollowUser")]
     public async Task<ActionResult> FollowUserAsync(string subjectId)
     {
-        //Get current user
-        var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user == null) return Unauthorized();
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
+
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
 
         user = await _userManager.Users
         .Include(u => u.Following)
@@ -158,9 +181,13 @@ public class UsersController : ControllerBase
     [HttpPost("UnfollowUser")]
     public async Task<ActionResult> UnfollowUserAsync(string subjectId)
     {
-        //Get current user
-        var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user == null) return Unauthorized();
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
+
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
 
         user = await _userManager.Users
         .Include(u => u.Following)

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using NetTopologySuite.Geometries;
 
 using _2cpbackend.Data;
@@ -40,12 +41,13 @@ public class EventsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelUtils.GetModelErrors(ModelState.Values));
 
-        //Retrieve Logged-In user
-        var user = await _userManager.GetUserAsync(HttpContext.User);
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
 
-        //User will never be null, this method needs authorization
-        if (user == null)
-            return Unauthorized();
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
 
         var category = await _context.Categories
         .Include(c => c.Events)
@@ -173,10 +175,16 @@ public class EventsController : ControllerBase
         .Include(e => e.Organizer)
         .Include(e => e.Category)
         .SingleOrDefault(e => e.Id == Id);
-        var user = await _userManager.GetUserAsync(HttpContext.User);
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
 
-        //Check if user is organizer, user not null because requires authentication
-        if ((user != null) && (resource != null) && (user.Id != resource.Organizer.Id))
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
+
+        //Check if user is organizer
+        if ((resource != null) && (user.Id != resource.Organizer.Id))
             return Unauthorized("You do not own this resource.");
 
         //Resource not found
@@ -218,12 +226,20 @@ public class EventsController : ControllerBase
         .Include(e => e.Category)
         .ThenInclude(c => c.Events)
         .SingleOrDefault(e => e.Id == Id);
-        var user = await _userManager.GetUserAsync(HttpContext.User);
+
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
+
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
+
         var newCategory = await _context.Categories.Include(c => c.Events).SingleOrDefaultAsync(c => c.Id == data.CategoryId);
 
 
-        //User is organizer? (user not null because requires authentication)
-        if ((user != null) && (resource != null) && (user.Id != resource.Organizer.Id))
+        //User is organizer?
+        if ((resource != null) && (user.Id != resource.Organizer.Id))
             return Unauthorized("You do not own this resource.");
 
         //Resource not found
@@ -259,10 +275,17 @@ public class EventsController : ControllerBase
     public async Task<ActionResult> UpdateCoverAsync(Guid eventId, IFormFile newCover)
     {
         var resource = _context.Events.Include(e => e.Organizer).SingleOrDefault(e => e.Id == eventId);
-        var user = await _userManager.GetUserAsync(HttpContext.User);
+        
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
 
-        //User is organizer? (user not null because requires authentication)
-        if ((user != null) && (resource != null) && (user.Id != resource.Organizer.Id))
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
+
+        //User is organizer?
+        if ((resource != null) && (user.Id != resource.Organizer.Id))
             return Unauthorized("You do not own this resource.");
 
         //Resource not found

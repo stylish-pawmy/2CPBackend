@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 using _2cpbackend.Models;
 using _2cpbackend.Data;
@@ -59,7 +60,12 @@ public class SubscriptionsController : ControllerBase
     public async Task<ActionResult> SubscribeAsync(Guid eventId)
     {
         var _event = await _context.Events.Include(e => e.Attendees).SingleOrDefaultAsync(e => e.Id == eventId);
-        var user = await  _userManager.GetUserAsync(HttpContext.User);
+        
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
+
+        var user = await _userManager.FindByNameAsync(userName);
 
         //user is not null because method requires authentication
         if (user == null) return StatusCode(500, "User authenticated but server unable to retrieve user reference.");
@@ -82,7 +88,12 @@ public class SubscriptionsController : ControllerBase
     public async Task<ActionResult> UnsubscribeAsync(Guid eventId)
     {
         var _event = _context.Events.Include(e => e.Attendees).SingleOrDefault(e => e.Id == eventId);
-        var user = await  _userManager.GetUserAsync(HttpContext.User);
+        
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
+
+        var user = await _userManager.FindByNameAsync(userName);
 
         //user is not null because method requires authentication
         if (user == null) return StatusCode(500, "User authenticated but server unable to retrieve user reference.");
@@ -103,7 +114,14 @@ public class SubscriptionsController : ControllerBase
     public async Task<ActionResult> KickUserAsync(String subjectId, Guid eventId)
     {
         var _event = _context.Events.Include(e => e.Organizer).SingleOrDefault(e => e.Id == eventId);
-        var user = await  _userManager.GetUserAsync(HttpContext.User);
+        
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
+
+        var user = await _userManager.FindByNameAsync(userName);
+
+        //The user subjected to operation
         var subject = _context.ApplicationUsers.Include(u => u.AttendedByUser).SingleOrDefault(u => u.Id == subjectId);
 
         //user is not null because method requires authentication
@@ -133,7 +151,13 @@ public class SubscriptionsController : ControllerBase
         .Include(e => e.BanList)
         .SingleOrDefault(e => e.Id == eventId);
 
-        var user = await  _userManager.GetUserAsync(HttpContext.User);
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
+
+        var user = await _userManager.FindByNameAsync(userName);
+
+        //The user subjected to operation
         var subject = _context.ApplicationUsers.Include(u => u.AttendedByUser).SingleOrDefault(u => u.Id == subjectId);
 
         //user is not null because method requires authentication
@@ -171,7 +195,13 @@ public class SubscriptionsController : ControllerBase
         .Include(e => e.BanList)
         .SingleOrDefault(e => e.Id == eventId);
 
-        var user = await  _userManager.GetUserAsync(HttpContext.User);
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
+
+        var user = await _userManager.FindByNameAsync(userName);
+
+        //User subjected to operation
         var subject = _context.ApplicationUsers.Include(u => u.AttendedByUser).SingleOrDefault(u => u.Id == subjectId);
 
         //user is not null because method requires authentication
@@ -205,9 +235,13 @@ public class SubscriptionsController : ControllerBase
     [HttpGet("SubscribedToEventList")]
     public async Task<ActionResult<IEnumerable<Guid>>> GetSubscribedToEventListAsync()
     {
-        var user = await _userManager.GetUserAsync(HttpContext.User);
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
 
-        if (user == null) return Unauthorized();
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return NotFound();
         
         user = await _userManager.Users
         .Include(u => u.AttendedByUser)
@@ -221,10 +255,13 @@ public class SubscriptionsController : ControllerBase
     [HttpPost("SaveEvent")]
     public async Task<ActionResult> SaveEventAsync(Guid eventId)
     {
-        //Load user reference
-        var user = await _userManager.GetUserAsync(HttpContext.User);
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
 
-        if (user == null) return Unauthorized();
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
 
         user = await _userManager.Users
         .Include(u => u.OrganizedByUser)
@@ -248,10 +285,13 @@ public class SubscriptionsController : ControllerBase
     [HttpPost("UnsaveEvent")]
     public async Task<ActionResult> UnsaveEventAsync(Guid eventId)
     {
-        //Load user reference
-        var user = await _userManager.GetUserAsync(HttpContext.User);
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
 
-        if (user == null) return Unauthorized();
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
 
         user = await _userManager.Users
         .Include(u => u.OrganizedByUser)
@@ -275,10 +315,13 @@ public class SubscriptionsController : ControllerBase
     [HttpGet("SavedEventsList")]
     public async Task<ActionResult<IEnumerable<Guid>>> GetSavedEventsList()
     {
-        //Load user reference
-        var user = await _userManager.GetUserAsync(HttpContext.User);
+        //Getting current user
+        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+        if (userName == null) return Unauthorized();
 
-        if (user == null) return Unauthorized();
+        var user = await _userManager.FindByNameAsync(userName);
+
+        if (user == null) return StatusCode(500, "User reference should not be null");
 
         user = await _userManager.Users
         .Include(u => u.OrganizedByUser)

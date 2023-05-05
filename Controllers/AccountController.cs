@@ -3,6 +3,11 @@ namespace _2cpbackend.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Security.Claims;
+using System.Text;
 
 using _2cpbackend.Models;
 using _2cpbackend.Services;
@@ -16,16 +21,19 @@ public class AccountController : Controller
     private readonly IEmailService _emailService;
     private readonly Random random = new Random();
     private readonly IBlobStorage _blobStorage;
+    private readonly IConfiguration _configuration;
 
     public AccountController(UserManager<ApplicationUser> userManager,
                             SignInManager<ApplicationUser> signInManager,
                             IEmailService emailService,
-                            IBlobStorage blobStorage)
+                            IBlobStorage blobStorage,
+                            IConfiguration configuration)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _emailService = emailService;
         _blobStorage = blobStorage;
+        _configuration = configuration;
     }
 
     [HttpPost("Register")]
@@ -98,7 +106,7 @@ public class AccountController : Controller
     }
 
     [HttpPost("Login")]
-    public async Task<ActionResult<LoginDto>> Login([FromForm][FromBody] LoginDto data)
+    public async Task<ActionResult<string>> Login([FromForm][FromBody] LoginDto data)
     {
         if (!ModelState.IsValid) return BadRequest("Invalid login data.");
         //Finding the user
@@ -106,12 +114,35 @@ public class AccountController : Controller
         if (user == null) user = _userManager.Users.SingleOrDefault(u => u.UserName == data.Identifier);
         if (user == null) user = _userManager.Users.SingleOrDefault(u => u.PhoneNumber == data.Identifier);
 
-        //Signing in
         if (user == null) return NotFound("User not found"); 
-        var result = await _signInManager.PasswordSignInAsync(user, data.Password, data.RememberMe, false);
+        if (!await _userManager.CheckPasswordAsync(user, data.Password)) return Unauthorized("Wrong user credentials.");
+        
+        //Getting Signing credentials
+        var keyString = _configuration["Jwt:Key"];
 
-        if (result.Succeeded) return Ok("User logged in.");
-        return BadRequest("Invalid login attempt");
+        if (keyString == null) keyString = "";
+
+        var key = Encoding.UTF8.GetBytes(keyString);
+        var secret = new SymmetricSecurityKey(key);
+        var credentials = new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
+
+        //Getting user claims
+        if (user.UserName == null) return StatusCode(500, "Username could not be resolved.");
+        var tokenClaims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.UserName)
+        };
+
+        var tokenOption = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["jwt:Audience"],
+            claims: tokenClaims,
+            expires: DateTime.Now.AddDays(3),
+            signingCredentials: credentials
+        );
+
+        return Ok(new JwtSecurityTokenHandler().WriteToken(tokenOption));
+
     }
 
     [HttpPost("ForgotPassword")]
