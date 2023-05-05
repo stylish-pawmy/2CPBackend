@@ -52,39 +52,7 @@ public class SubscriptionsController : ControllerBase
         
         return Ok(data);
     }
-
-    [HttpGet("SubscribersPage")]
-    public ActionResult<IEnumerable<string>> GetSubscribers(Guid eventId, int startIndex, int endIndex)
-    {
-        var _event = _context.Events.Include(e => e.Attendees).SingleOrDefault(e => e.Id == eventId);
-
-        if (_event == null) return NotFound();
-
-        var limit = Math.Max(_event.Attendees.Count - 1, 0);
-
-        var subscribersList = new List<string>();
-
-        var data = new List<UserDetailsDto>();
-        foreach (ApplicationUser subscriber in _event.Attendees.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)))
-        {
-            var resource = new UserDetailsDto
-            {
-                FirstName = subscriber.FirstName,
-                LastName = subscriber.LastName,
-                Email = subscriber.Email,
-                PhoneNumber = subscriber.PhoneNumber,
-                Biography = subscriber.Biography,
-                UserName = subscriber.UserName
-            };
-
-            //Adding profile picture link
-            if (subscriber.ProfilePicture == null) resource.ProfilePictureUrl = null;
-            else resource.ProfilePictureUrl = subscriber.ProfilePicture;
-            data.Add(resource);
-        }
-        
-        return Ok(data);
-    }
+    
 
     [HttpPost("Subscribe")]
     public async Task<ActionResult> SubscribeAsync(Guid eventId)

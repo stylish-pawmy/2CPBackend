@@ -179,49 +179,6 @@ public class EventsController : ControllerBase
         return Ok(data);
     }
 
-    [HttpGet("GetEventsPage")]
-    public ActionResult<IEnumerable<Guid>> GetEventsPage(int startIndex, int endIndex)
-    {
-        var resource = _context.Events
-        .Include(e => e.Attendees)
-        .Include(e => e.Organizer)
-        .Include(e => e.Category).ToList();
-
-        var limit = Math.Max(resource.Count - 1, 0);
-        
-        //Resource found
-        var data = new List<EventDetailsDto>();
-
-        foreach(Event _event in resource.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)))
-        {
-            //Event details object
-            var result = new EventDetailsDto
-            {
-                Id = _event.Id,
-                Title = _event.Title,
-                DateAndTime = _event.DateAndTime,
-                Description = _event.Description,
-                Price = _event.Price,
-                CoverUrl = _event.CoverPhoto,
-                Location = new _2cpbackend.Models.Coordinates
-                {
-                    Longitude = _event.Location.X,
-                    Latitude = _event.Location.Y
-                },
-                OrganizerId = _event.Organizer.Id,
-                NumberOfSubscribers = _event.Attendees.Count(),
-                CategoryId = _event.Category.Id,
-                CategoryName = _event.Category.Name,
-                DateAdded = _event.DateAdded,
-                OrganizerName = _event.Organizer.UserName,
-                OrganizerProfilePicture = _event.Organizer.ProfilePicture
-            };
-            
-            data.Add(result);
-        }
-
-        return Ok(data);
-    }
 
     [Authorize]
     [HttpDelete("CancelEvent")]
@@ -424,62 +381,6 @@ public class EventsController : ControllerBase
         return Ok(data);
     }
 
-    [HttpGet("EventsInCategoryPage")]
-    public async Task<ActionResult<List<EventDetailsDto>>> GetEventsInCategoryPage(int categoryId, int startIndex, int endIndex)
-    {
-        var category = _context.Categories.Include(c => c.Events).SingleOrDefault(c => c.Id == categoryId);
-
-        if (category == null)
-            return NotFound();
-        
-        for (int i = 0; i < category.Events.Count; i++)
-        {
-            //Get references to other tables
-            var reference = await _context.Events
-            .Include(e => e.Organizer)
-            .Include(e => e.Attendees)
-            .Include(e => e.Category).SingleOrDefaultAsync(e => e.Id == category.Events[i].Id);
-
-            if (reference == null) throw new NullReferenceException();
-
-            category.Events[i] = reference;
-        }
-
-        var limit = Math.Max(category.Events.Count - 1, 0);
-        limit = Math.Max(category.Events.ToList().Count - 1, 0);
-
-        var data = new List<EventDetailsDto>();
-
-        foreach (Event _event in category.Events.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)))
-        {
-            //Event details object
-            var result = new EventDetailsDto
-            {
-                Id = _event.Id,
-                Title = _event.Title,
-                DateAndTime = _event.DateAndTime,
-                Description = _event.Description,
-                Price = _event.Price,
-                CoverUrl = _event.CoverPhoto,
-                Location = new _2cpbackend.Models.Coordinates
-                {
-                    Longitude = _event.Location.X,
-                    Latitude = _event.Location.Y
-                },
-                OrganizerId = _event.Organizer.Id,
-                NumberOfSubscribers = _event.Attendees.Count(),
-                CategoryId = _event.Category.Id,
-                CategoryName = _event.Category.Name,
-                DateAdded = _event.DateAdded,
-                OrganizerName = _event.Organizer.UserName,
-                OrganizerProfilePicture = _event.Organizer.ProfilePicture
-            };
-            
-            data.Add(result);
-        }
-
-        return Ok(data);
-    }
 
     [HttpGet("SearchEvent")]
     public async Task<ActionResult<IEnumerable<EventDetailsDto>>> SearchEvent(string query, int amount)
