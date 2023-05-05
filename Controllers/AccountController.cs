@@ -105,8 +105,8 @@ public class AccountController : Controller
         return Ok();
     }
 
-    [HttpPost("Login")]
-    public async Task<ActionResult<string>> Login([FromForm][FromBody] LoginDto data)
+    [HttpPost("Authenticate")]
+    public async Task<ActionResult<string>> Authenticate([FromForm][FromBody] LoginDto data)
     {
         if (!ModelState.IsValid) return BadRequest("Invalid login data.");
         //Finding the user
@@ -145,19 +145,6 @@ public class AccountController : Controller
 
     }
 
-    [HttpPost("ForgotPassword")]
-    public async Task<IActionResult> ForgotPassword([FromForm][FromBody] ForgotPasswordDto data)
-    {
-        var user =  await _userManager.FindByEmailAsync(data.Email);
-        if (user != null)
-        {
-            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-            //var callbackurl = Url.Action("ResetPassword", "Account", new {userId = user.Id, code = code}, protocol: HttpContext.Request.Scheme);
-            await _emailService.SendEmail(data.Email, "Password Reset Code", code);
-        }
-
-        return Ok();
-    }
 
     [HttpPost("ResetPassword")]
     public async Task<ActionResult<ResetPasswordDto>> ResetPassword([FromForm][FromBody] ResetPasswordDto data)
