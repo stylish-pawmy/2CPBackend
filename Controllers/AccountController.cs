@@ -97,13 +97,7 @@ public class AccountController : Controller
         AddModelErrors(result);
         return data;
     }
-
-    [HttpGet("LogOff")]
-    public async Task<ActionResult> LogOff()
-    {
-        await _signInManager.SignOutAsync();
-        return Ok();
-    }
+    
 
     [HttpPost("Authenticate")]
     public async Task<ActionResult<string>> Authenticate([FromForm][FromBody] LoginDto data)
@@ -143,6 +137,20 @@ public class AccountController : Controller
 
         return Ok(new JwtSecurityTokenHandler().WriteToken(tokenOption));
 
+    }
+
+    [HttpPost("ForgotPassword")]
+    public async Task<IActionResult> ForgotPassword([FromForm][FromBody] ForgotPasswordDto data)
+    {
+        var user =  await _userManager.FindByEmailAsync(data.Email);
+        if (user != null)
+        {
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            //var callbackurl = Url.Action("ResetPassword", "Account", new {userId = user.Id, code = code}, protocol: HttpContext.Request.Scheme);
+            await _emailService.SendEmail(data.Email, "Password Reset Code", code);
+        }
+
+        return Ok();
     }
 
 
