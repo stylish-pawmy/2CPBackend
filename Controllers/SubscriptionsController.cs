@@ -52,7 +52,7 @@ public class SubscriptionsController : ControllerBase
         
         return Ok(data);
     }
-    
+
 
     [HttpPost("Subscribe")]
     public async Task<ActionResult> SubscribeAsync(Guid eventId)
@@ -73,6 +73,7 @@ public class SubscriptionsController : ControllerBase
         if (_event.BanList.Contains(user)) return Unauthorized("User is banned from attending this event.");
 
         if (user.AttendedByUser.Contains(_event)) return BadRequest("User already subscribed to event.");
+        if (_event.Attendees.Count == _event.MaxAttendees) return BadRequest("Event already at maximum capacity.");
 
         _event.Attendees.Add(user);
         user.AttendedByUser.Add(_event);
@@ -251,7 +252,8 @@ public class SubscriptionsController : ControllerBase
                 CategoryName = _event.Category.Name,
                 DateAdded = _event.DateAdded,
                 OrganizerName = _event.Organizer.UserName,
-                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture,
+                MaxAttendees = _event.MaxAttendees
             };
             
             data.Add(result);
@@ -301,7 +303,8 @@ public class SubscriptionsController : ControllerBase
                 CategoryName = _event.Category.Name,
                 DateAdded = _event.DateAdded,
                 OrganizerName = _event.Organizer.UserName,
-                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture,
+                MaxAttendees = _event.MaxAttendees
             };
             
             data.Add(result);
@@ -411,7 +414,8 @@ public class SubscriptionsController : ControllerBase
                 CategoryName = _event.Category.Name,
                 DateAdded = _event.DateAdded,
                 OrganizerName = _event.Organizer.UserName,
-                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture,
+                MaxAttendees = _event.MaxAttendees
             };
             
             data.Add(result);

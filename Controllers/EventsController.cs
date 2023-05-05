@@ -68,7 +68,8 @@ public class EventsController : ControllerBase
             Attendees = new List<ApplicationUser>(),
             Location = new Point(data.Location.Longitude, data.Location.Latitude),
             Category = category,
-            DateAdded = DateTime.Now.ToUniversalTime()
+            DateAdded = DateTime.Now.ToUniversalTime(),
+            MaxAttendees = data.MaxAttendees
         };
 
         //Add to category index
@@ -127,7 +128,8 @@ public class EventsController : ControllerBase
             CategoryName = resource.Category.Name,
             DateAdded = resource.DateAdded,
             OrganizerName = resource.Organizer.UserName,
-            OrganizerProfilePicture = resource.Organizer.ProfilePicture
+            OrganizerProfilePicture = resource.Organizer.ProfilePicture,
+            MaxAttendees = resource.MaxAttendees
         };
 
         return Ok(data);
@@ -170,7 +172,8 @@ public class EventsController : ControllerBase
                 CategoryName = _event.Category.Name,
                 DateAdded = _event.DateAdded,
                 OrganizerName = _event.Organizer.UserName,
-                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture,
+                MaxAttendees = _event.MaxAttendees
             };
             
             data.Add(result);
@@ -372,7 +375,8 @@ public class EventsController : ControllerBase
                 CategoryName = _event.Category.Name,
                 DateAdded = _event.DateAdded,
                 OrganizerName = _event.Organizer.UserName,
-                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture,
+                MaxAttendees = _event.MaxAttendees
             };
             
             data.Add(result);
@@ -421,7 +425,8 @@ public class EventsController : ControllerBase
                 CategoryName = _event.Category.Name,
                 DateAdded = _event.DateAdded,
                 OrganizerName = _event.Organizer.UserName,
-                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture,
+                MaxAttendees = _event.MaxAttendees
             };
             
             data.Add(result);

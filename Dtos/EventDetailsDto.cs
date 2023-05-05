@@ -28,5 +28,7 @@ public class EventDetailsDto
     public int CategoryId { get; set; }
     //Date Added
     public DateTime DateAdded { get; set; }
+    //Max Attendees
+    public int MaxAttendees { get; set; }
 
 }

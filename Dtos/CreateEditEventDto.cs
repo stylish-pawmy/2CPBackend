@@ -18,4 +18,6 @@ public class CreateEditEventDto
     [Required] public Coordinates Location { get; set; } = null!;
     //Category
     [Required] public int CategoryId { get; set; }
+    //Maximum number of attendees
+    [Required] public int MaxAttendees { get; set; }
 }

@@ -20,6 +20,7 @@ public class Event
     //Attendees
     public List<ApplicationUser> Attendees { get; set; } = new List<ApplicationUser>();
     public List<ApplicationUser> BanList { get; set; } = new List<ApplicationUser>();
+    public int MaxAttendees { get; set; }
     [DataType(DataType.Url)] public string? CoverPhoto { get; set; }
     //Location
     [Required] public Point Location { get; set; } = null!;
