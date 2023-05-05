@@ -25,18 +25,32 @@ public class SubscriptionsController : ControllerBase
 
     [AllowAnonymous]
     [HttpGet("SubscribersList")]
-    public ActionResult<IEnumerable<string>> GetSubscribers(Guid eventId)
+    public ActionResult<IEnumerable<UserDetailsDto>> GetSubscribers(Guid eventId)
     {
         var _event = _context.Events.Include(e => e.Attendees).SingleOrDefault(e => e.Id == eventId);
 
         if (_event == null) return NotFound();
 
-        var subscribersList = new List<string>();
+        var data = new List<UserDetailsDto>();
+        foreach (ApplicationUser subscriber in _event.Attendees)
+        {
+            var resource = new UserDetailsDto
+            {
+                FirstName = subscriber.FirstName,
+                LastName = subscriber.LastName,
+                Email = subscriber.Email,
+                PhoneNumber = subscriber.PhoneNumber,
+                Biography = subscriber.Biography,
+                UserName = subscriber.UserName
+            };
 
-        foreach (ApplicationUser user in _event.Attendees)
-            subscribersList.Add(user.Id);
+            //Adding profile picture link
+            if (subscriber.ProfilePicture == null) resource.ProfilePictureUrl = null;
+            else resource.ProfilePictureUrl = subscriber.ProfilePicture;
+            data.Add(resource);
+        }
         
-        return Ok(subscribersList);
+        return Ok(data);
     }
 
     [HttpGet("SubscribersPage")]
@@ -50,10 +64,26 @@ public class SubscriptionsController : ControllerBase
 
         var subscribersList = new List<string>();
 
-        foreach (ApplicationUser user in _event.Attendees.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)))
-            subscribersList.Add(user.Id);
+        var data = new List<UserDetailsDto>();
+        foreach (ApplicationUser subscriber in _event.Attendees.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)))
+        {
+            var resource = new UserDetailsDto
+            {
+                FirstName = subscriber.FirstName,
+                LastName = subscriber.LastName,
+                Email = subscriber.Email,
+                PhoneNumber = subscriber.PhoneNumber,
+                Biography = subscriber.Biography,
+                UserName = subscriber.UserName
+            };
+
+            //Adding profile picture link
+            if (subscriber.ProfilePicture == null) resource.ProfilePictureUrl = null;
+            else resource.ProfilePictureUrl = subscriber.ProfilePicture;
+            data.Add(resource);
+        }
         
-        return Ok(subscribersList);
+        return Ok(data);
     }
 
     [HttpPost("Subscribe")]
@@ -229,7 +259,37 @@ public class SubscriptionsController : ControllerBase
 
         if (user == null) return NotFound();
 
-        return Ok(user.OrganizedByUser.Select(e => e.Id));
+        var data = new List<EventDetailsDto>();
+
+        foreach (Event _event in user.OrganizedByUser)
+        {
+            //Event details object
+            var result = new EventDetailsDto
+            {
+                Id = _event.Id,
+                Title = _event.Title,
+                DateAndTime = _event.DateAndTime,
+                Description = _event.Description,
+                Price = _event.Price,
+                CoverUrl = _event.CoverPhoto,
+                Location = new _2cpbackend.Models.Coordinates
+                {
+                    Longitude = _event.Location.X,
+                    Latitude = _event.Location.Y
+                },
+                OrganizerId = _event.Organizer.Id,
+                NumberOfSubscribers = _event.Attendees.Count(),
+                CategoryId = _event.Category.Id,
+                CategoryName = _event.Category.Name,
+                DateAdded = _event.DateAdded,
+                OrganizerName = _event.Organizer.UserName,
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+            };
+            
+            data.Add(result);
+        }
+
+        return Ok(data);
     }
 
     [HttpGet("SubscribedToEventList")]
@@ -249,7 +309,37 @@ public class SubscriptionsController : ControllerBase
         
         if (user == null) return StatusCode(500, "User reference should not be null.");
 
-        return Ok(user.AttendedByUser.Select(e => e.Id));
+        var data = new List<EventDetailsDto>();
+
+        foreach (Event _event in user.AttendedByUser)
+        {
+            //Event details object
+            var result = new EventDetailsDto
+            {
+                Id = _event.Id,
+                Title = _event.Title,
+                DateAndTime = _event.DateAndTime,
+                Description = _event.Description,
+                Price = _event.Price,
+                CoverUrl = _event.CoverPhoto,
+                Location = new _2cpbackend.Models.Coordinates
+                {
+                    Longitude = _event.Location.X,
+                    Latitude = _event.Location.Y
+                },
+                OrganizerId = _event.Organizer.Id,
+                NumberOfSubscribers = _event.Attendees.Count(),
+                CategoryId = _event.Category.Id,
+                CategoryName = _event.Category.Name,
+                DateAdded = _event.DateAdded,
+                OrganizerName = _event.Organizer.UserName,
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+            };
+            
+            data.Add(result);
+        }
+
+        return Ok(data);
     }
     
     [HttpPost("SaveEvent")]
@@ -329,6 +419,36 @@ public class SubscriptionsController : ControllerBase
 
         if (user == null) return StatusCode(500, "User reference should not be null.");
 
-        return Ok(user.SavedEvents.Select(e => e.Id));
+        var data = new List<EventDetailsDto>();
+
+        foreach (Event _event in user.SavedEvents)
+        {
+            //Event details object
+            var result = new EventDetailsDto
+            {
+                Id = _event.Id,
+                Title = _event.Title,
+                DateAndTime = _event.DateAndTime,
+                Description = _event.Description,
+                Price = _event.Price,
+                CoverUrl = _event.CoverPhoto,
+                Location = new _2cpbackend.Models.Coordinates
+                {
+                    Longitude = _event.Location.X,
+                    Latitude = _event.Location.Y
+                },
+                OrganizerId = _event.Organizer.Id,
+                NumberOfSubscribers = _event.Attendees.Count(),
+                CategoryId = _event.Category.Id,
+                CategoryName = _event.Category.Name,
+                DateAdded = _event.DateAdded,
+                OrganizerName = _event.Organizer.UserName,
+                OrganizerProfilePicture = _event.Organizer.ProfilePicture
+            };
+            
+            data.Add(result);
+        }
+
+        return Ok(data);;
     }
 }

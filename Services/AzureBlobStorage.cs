@@ -36,6 +36,6 @@ public class AzureBlobStorage : IBlobStorage
         
         BlobClient blob = container.GetBlobClient(fileName);
 
-        await blob.DeleteIfExistsAsync();
+        await blob.DeleteIfExistsAsync(Azure.Storage.Blobs.Models.DeleteSnapshotsOption.IncludeSnapshots);
     }
 }

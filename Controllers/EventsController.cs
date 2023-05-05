@@ -136,7 +136,11 @@ public class EventsController : ControllerBase
     [HttpGet("GetEventsList")]
     public ActionResult<IEnumerable<EventDetailsDto>> GetEventsList()
     {
-        var resource = _context.Events.ToList();
+        var resource = _context.Events
+        .Include(e => e.Attendees)
+        .Include(e => e.Organizer)
+        .Include(e => e.Category).ToList();
+
         //Resource not found
         if (resource == null)
             return NotFound();
@@ -178,7 +182,11 @@ public class EventsController : ControllerBase
     [HttpGet("GetEventsPage")]
     public ActionResult<IEnumerable<Guid>> GetEventsPage(int startIndex, int endIndex)
     {
-        var resource = _context.Events.ToList();
+        var resource = _context.Events
+        .Include(e => e.Attendees)
+        .Include(e => e.Organizer)
+        .Include(e => e.Category).ToList();
+
         var limit = Math.Max(resource.Count - 1, 0);
         
         //Resource found
@@ -365,12 +373,23 @@ public class EventsController : ControllerBase
     [HttpGet("EventsInCategoryList")]
     public ActionResult<List<EventDetailsDto>> GetEventsInCategoryList(int categoryId)
     {
-        var category = _context.Categories
-        .Include(c => c.Events)
-        .SingleOrDefault(c => c.Id == categoryId);
+        var category = _context.Categories.Include(c => c.Events).SingleOrDefault(c => c.Id == categoryId);
 
         if (category == null)
             return NotFound();
+        
+        for (int i = 0; i < category.Events.Count; i++)
+        {
+            //Get references to other tables
+            var reference = _context.Events
+            .Include(e => e.Organizer)
+            .Include(e => e.Attendees)
+            .Include(e => e.Category).SingleOrDefault(e => e.Id == category.Events[i].Id);
+
+            if (reference == null) throw new NullReferenceException();
+
+            category.Events[i] = reference;
+        }
         
         var data = new List<EventDetailsDto>();
 
@@ -406,16 +425,28 @@ public class EventsController : ControllerBase
     }
 
     [HttpGet("EventsInCategoryPage")]
-    public ActionResult<List<EventCategory>> GetEventsInCategoryPage(int categoryId, int startIndex, int endIndex)
+    public async Task<ActionResult<List<EventDetailsDto>>> GetEventsInCategoryPage(int categoryId, int startIndex, int endIndex)
     {
-        var category = _context.Categories
-        .Include(c => c.Events)
-        .SingleOrDefault(c => c.Id == categoryId);
+        var category = _context.Categories.Include(c => c.Events).SingleOrDefault(c => c.Id == categoryId);
 
         if (category == null)
             return NotFound();
         
+        for (int i = 0; i < category.Events.Count; i++)
+        {
+            //Get references to other tables
+            var reference = await _context.Events
+            .Include(e => e.Organizer)
+            .Include(e => e.Attendees)
+            .Include(e => e.Category).SingleOrDefaultAsync(e => e.Id == category.Events[i].Id);
+
+            if (reference == null) throw new NullReferenceException();
+
+            category.Events[i] = reference;
+        }
+
         var limit = Math.Max(category.Events.Count - 1, 0);
+        limit = Math.Max(category.Events.ToList().Count - 1, 0);
 
         var data = new List<EventDetailsDto>();
 
@@ -465,7 +496,7 @@ public class EventsController : ControllerBase
             var _event = await _context.Events
             .Include(e => e.Organizer)
             .Include(e => e.Attendees)
-            .Include(e => e.Location)
+            .Include(e => e.Category)
             .SingleOrDefaultAsync(e => e.Id.ToString() == eventId);
 
             if (_event == null) throw new NullReferenceException();

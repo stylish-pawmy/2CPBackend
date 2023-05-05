@@ -214,7 +214,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("FollowersList")]
-    public async Task<ActionResult<List<string>>> GetFollowersListAsync(string userId)
+    public async Task<ActionResult<List<UserDetailsDto>>> GetFollowersListAsync(string userId)
     {
         //Get user reference
         var user = await _context.ApplicationUsers
@@ -222,11 +222,30 @@ public class UsersController : ControllerBase
         .SingleOrDefaultAsync(u => u.Id == userId);
         if (user == null) return NotFound();
 
-        return Ok(user.Followers.Select(u => u.Id));
+        var data = new List<UserDetailsDto>();
+        foreach (ApplicationUser follower in user.Followers)
+        {
+            var resource = new UserDetailsDto
+            {
+                FirstName = follower.FirstName,
+                LastName = follower.LastName,
+                Email = follower.Email,
+                PhoneNumber = follower.PhoneNumber,
+                Biography = follower.Biography,
+                UserName = follower.UserName
+            };
+
+            //Adding profile picture link
+            if (follower.ProfilePicture == null) resource.ProfilePictureUrl = null;
+            else resource.ProfilePictureUrl = user.ProfilePicture;
+            data.Add(resource);
+        }
+
+        return Ok(data);
     }
 
     [HttpGet("FollowersPage")]
-    public async Task<ActionResult<List<string>>> GetFollowersPageAsync(string userId, int startIndex, int endIndex)
+    public async Task<ActionResult<List<UserDetailsDto>>> GetFollowersPageAsync(string userId, int startIndex, int endIndex)
     {
         //Get user reference
         var user = await _context.ApplicationUsers
@@ -234,13 +253,32 @@ public class UsersController : ControllerBase
         .SingleOrDefaultAsync(u => u.Id == userId);
         if (user == null) return NotFound();
 
-        var limit = user.Followers.Count - 1;
+        var limit = Math.Max(user.Followers.Count - 1, 0);
 
-        return Ok(user.Followers.GetRange(Math.Max(0, startIndex), Math.Min(endIndex, limit)).Select(u => u.Id));
+        var data = new List<UserDetailsDto>();
+        foreach (ApplicationUser follower in user.Followers.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)))
+        {
+            var resource = new UserDetailsDto
+            {
+                FirstName = follower.FirstName,
+                LastName = follower.LastName,
+                Email = follower.Email,
+                PhoneNumber = follower.PhoneNumber,
+                Biography = follower.Biography,
+                UserName = follower.UserName
+            };
+
+            //Adding profile picture link
+            if (follower.ProfilePicture == null) resource.ProfilePictureUrl = null;
+            else resource.ProfilePictureUrl = user.ProfilePicture;
+            data.Add(resource);
+        }
+
+        return Ok(data);
     }
 
     [HttpGet("FollowingList")]
-    public async Task<ActionResult<List<string>>> GetFollowingListAsync(string userId)
+    public async Task<ActionResult<List<UserDetailsDto>>> GetFollowingListAsync(string userId)
     {
         //Get user reference
         var user = await _context.ApplicationUsers
@@ -248,11 +286,30 @@ public class UsersController : ControllerBase
         .SingleOrDefaultAsync(u => u.Id == userId);
         if (user == null) return NotFound();
 
-        return Ok(user.Following.Select(u => u.Id));
+        var data = new List<UserDetailsDto>();
+        foreach (ApplicationUser follower in user.Following)
+        {
+            var resource = new UserDetailsDto
+            {
+                FirstName = follower.FirstName,
+                LastName = follower.LastName,
+                Email = follower.Email,
+                PhoneNumber = follower.PhoneNumber,
+                Biography = follower.Biography,
+                UserName = follower.UserName
+            };
+
+            //Adding profile picture link
+            if (follower.ProfilePicture == null) resource.ProfilePictureUrl = null;
+            else resource.ProfilePictureUrl = user.ProfilePicture;
+            data.Add(resource);
+        }
+
+        return Ok(data);
     }
 
     [HttpGet("FollowingPage")]
-    public async Task<ActionResult<List<string>>> GetFollowingPageAsync(string userId, int startIndex, int endIndex)
+    public async Task<ActionResult<List<UserDetailsDto>>> GetFollowingPageAsync(string userId, int startIndex, int endIndex)
     {
         //Get user reference
         var user = await _context.ApplicationUsers
@@ -260,9 +317,28 @@ public class UsersController : ControllerBase
         .SingleOrDefaultAsync(u => u.Id == userId);
         if (user == null) return NotFound();
 
-        var limit = user.Following.Count - 1;
+        var limit = Math.Max(user.Following.Count - 1, 0);
 
-        return Ok(user.Following.GetRange(Math.Max(0, startIndex), Math.Min(endIndex, limit)).Select(u => u.Id));
+        var data = new List<UserDetailsDto>();
+        foreach (ApplicationUser follower in user.Following.GetRange(Math.Min(startIndex, limit), Math.Min(endIndex, limit)))
+        {
+            var resource = new UserDetailsDto
+            {
+                FirstName = follower.FirstName,
+                LastName = follower.LastName,
+                Email = follower.Email,
+                PhoneNumber = follower.PhoneNumber,
+                Biography = follower.Biography,
+                UserName = follower.UserName
+            };
+
+            //Adding profile picture link
+            if (follower.ProfilePicture == null) resource.ProfilePictureUrl = null;
+            else resource.ProfilePictureUrl = user.ProfilePicture;
+            data.Add(resource);
+        }
+
+        return Ok(data);
     }
 
 }

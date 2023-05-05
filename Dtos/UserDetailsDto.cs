@@ -12,10 +12,10 @@ public class UserDetailsDto
     [DataType(DataType.PhoneNumber)] public string? PhoneNumber { get; set; }
 
     //Email
-    [Required][EmailAddress] public string Email { get; set; } = null!;
+    [Required][EmailAddress] public string? Email { get; set; }
 
     //User Name
-    [Required][StringLength(255, MinimumLength = 6)] public string UserName { get; set; } = null!;
+    [Required][StringLength(255, MinimumLength = 6)] public string? UserName { get; set; }
 
     //Profile Picture
     public string? ProfilePictureUrl { get; set; }
