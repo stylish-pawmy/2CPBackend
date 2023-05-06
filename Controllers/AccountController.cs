@@ -74,8 +74,35 @@ public class AccountController : Controller
         {
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             await _emailService.SendEmail(data.Email, "Email Confirmation", code);
-            await _signInManager.SignInAsync(user, false);
-            return Created("Users/GetUser", new {userId = user.Id});
+            
+            //Getting Signing credentials
+            var keyString = _configuration["Jwt:Key"];
+
+            if (keyString == null) keyString = "";
+
+            var key = Encoding.UTF8.GetBytes(keyString);
+            var secret = new SymmetricSecurityKey(key);
+            var credentials = new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
+
+            //Getting user claims
+            if (user.UserName == null) return StatusCode(500, "Username could not be resolved.");
+            var tokenClaims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.UserName)
+            };
+
+            var tokenOption = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["jwt:Audience"],
+                claims: tokenClaims,
+                expires: DateTime.Now.AddDays(3),
+                signingCredentials: credentials
+            );
+
+            return Ok(
+                new {token = new JwtSecurityTokenHandler().WriteToken(tokenOption),
+                userId = user.Id}
+            );
         }
         
         AddModelErrors(result);
