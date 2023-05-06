@@ -37,7 +37,7 @@ public class AccountController : Controller
     }
 
     [HttpPost("Register")]
-    public async Task<ActionResult<RegisterDto>> RegisterAsync([FromForm][FromBody] RegisterDto data)
+    public async Task<ActionResult<Object>> RegisterAsync([FromForm][FromBody] RegisterDto data)
     {
         if (!ModelState.IsValid)
         {
