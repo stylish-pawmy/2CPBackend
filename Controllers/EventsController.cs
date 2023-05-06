@@ -56,6 +56,9 @@ public class EventsController : ControllerBase
         if (category == null)
             return BadRequest("Invalid category");
 
+        if (data.DateAndTime.ToUniversalTime() < DateTime.UtcNow)
+            return BadRequest("Invalid event schedule.");
+
         //Creation
         var resource = new Event
         {
@@ -69,8 +72,14 @@ public class EventsController : ControllerBase
             Location = new Point(data.Location.Longitude, data.Location.Latitude),
             Category = category,
             DateAdded = DateTime.Now.ToUniversalTime(),
-            MaxAttendees = data.MaxAttendees
+            MaxAttendees = data.MaxAttendees,
         };
+        //Automatically give 1 day for non-set TimeSpans
+        var timeSpan = TimeSpan.FromMinutes(data.TimeSpan);
+        if (timeSpan == TimeSpan.Zero)
+            resource.TimeSpan = new TimeSpan(24, 0, 0);
+        else
+            resource.TimeSpan = timeSpan;
 
         //Add to category index
         category.Events.Add(resource);
@@ -129,7 +138,8 @@ public class EventsController : ControllerBase
             DateAdded = resource.DateAdded,
             OrganizerName = resource.Organizer.UserName,
             OrganizerProfilePicture = resource.Organizer.ProfilePicture,
-            MaxAttendees = resource.MaxAttendees
+            MaxAttendees = resource.MaxAttendees,
+            TimeSpan = new Duration(resource.TimeSpan)
         };
 
         return Ok(data);
@@ -173,7 +183,8 @@ public class EventsController : ControllerBase
                 DateAdded = _event.DateAdded,
                 OrganizerName = _event.Organizer.UserName,
                 OrganizerProfilePicture = _event.Organizer.ProfilePicture,
-                MaxAttendees = _event.MaxAttendees
+                MaxAttendees = _event.MaxAttendees,
+                TimeSpan = new Duration(_event.TimeSpan)
             };
             
             data.Add(result);
@@ -206,6 +217,10 @@ public class EventsController : ControllerBase
         //Resource not found
         if (resource == null)
             return NotFound();
+
+        //Forbid cancellation of passed events
+        if (resource.DateAndTime < DateTime.UtcNow)
+            return BadRequest("Cannot cancel already passed events.");
 
         //Remove cover image
         if (resource.CoverPhoto != null)
@@ -270,6 +285,14 @@ public class EventsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelUtils.GetModelErrors(ModelState.Values));
 
+        //Forbid edition of passed events
+        if (resource.DateAndTime < DateTime.Now)
+            return BadRequest("Cannot edit already passed events");
+        
+        //Check if date and time are valid
+        if (resource.DateAndTime < DateTime.Now)
+            return BadRequest("Invalid event schedule.");
+
         //Edit category
         resource.Category.Events.Remove(resource);
         newCategory.Events.Add(resource);
@@ -281,6 +304,8 @@ public class EventsController : ControllerBase
         resource.Price = data.Price;
         resource.Description = data.Description;
         resource.Category = newCategory;
+        resource.TimeSpan = TimeSpan.FromMinutes(data.TimeSpan);
+        resource.MaxAttendees = data.MaxAttendees;
 
         await _context.SaveChangesAsync();
 
@@ -376,7 +401,9 @@ public class EventsController : ControllerBase
                 DateAdded = _event.DateAdded,
                 OrganizerName = _event.Organizer.UserName,
                 OrganizerProfilePicture = _event.Organizer.ProfilePicture,
-                MaxAttendees = _event.MaxAttendees
+                MaxAttendees = _event.MaxAttendees,
+                TimeSpan = new Duration(_event.TimeSpan)
+
             };
             
             data.Add(result);
@@ -426,7 +453,8 @@ public class EventsController : ControllerBase
                 DateAdded = _event.DateAdded,
                 OrganizerName = _event.Organizer.UserName,
                 OrganizerProfilePicture = _event.Organizer.ProfilePicture,
-                MaxAttendees = _event.MaxAttendees
+                MaxAttendees = _event.MaxAttendees,
+                TimeSpan = new Duration(_event.TimeSpan)
             };
             
             data.Add(result);

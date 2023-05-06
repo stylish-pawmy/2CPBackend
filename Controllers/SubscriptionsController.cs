@@ -253,7 +253,8 @@ public class SubscriptionsController : ControllerBase
                 DateAdded = _event.DateAdded,
                 OrganizerName = _event.Organizer.UserName,
                 OrganizerProfilePicture = _event.Organizer.ProfilePicture,
-                MaxAttendees = _event.MaxAttendees
+                MaxAttendees = _event.MaxAttendees,
+                TimeSpan = new Duration(_event.TimeSpan)
             };
             
             data.Add(result);
@@ -304,7 +305,8 @@ public class SubscriptionsController : ControllerBase
                 DateAdded = _event.DateAdded,
                 OrganizerName = _event.Organizer.UserName,
                 OrganizerProfilePicture = _event.Organizer.ProfilePicture,
-                MaxAttendees = _event.MaxAttendees
+                MaxAttendees = _event.MaxAttendees,
+                TimeSpan = new Duration(_event.TimeSpan)
             };
             
             data.Add(result);
@@ -415,7 +417,8 @@ public class SubscriptionsController : ControllerBase
                 DateAdded = _event.DateAdded,
                 OrganizerName = _event.Organizer.UserName,
                 OrganizerProfilePicture = _event.Organizer.ProfilePicture,
-                MaxAttendees = _event.MaxAttendees
+                MaxAttendees = _event.MaxAttendees,
+                TimeSpan = new Duration(_event.TimeSpan)
             };
             
             data.Add(result);

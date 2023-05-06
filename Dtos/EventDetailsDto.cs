@@ -8,8 +8,9 @@ public class EventDetailsDto
     public Guid Id { get; set; }
     //Title
     public string Title { get; set; } = null!;
-    //Date
+    //Date & Time
     [DataType(DataType.DateTime)] public DateTime DateAndTime { get; set; }
+    [DataType(DataType.Duration)] public Duration TimeSpan { get; set; } = null!;
     //Description
     public string? Description { get; set; }
     //Price

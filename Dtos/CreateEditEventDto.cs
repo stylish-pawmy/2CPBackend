@@ -6,8 +6,9 @@ public class CreateEditEventDto
 {
     //Title
     [Required] public string Title { get; set; } = null!;
-    //Date
+    //Date & Time
     [Required][DataType(DataType.DateTime)] public DateTime DateAndTime { get; set; }
+    [DataType(DataType.Duration)] public int TimeSpan { get; set; }
     //Description
     public string? Description { get; set; }
     //Price

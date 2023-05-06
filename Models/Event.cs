@@ -9,8 +9,9 @@ public class Event
     [Required] public Guid Id { get; set; }
     //Title
     [Required] public string Title { get; set; } = null!;
-    //Date
+    //Date & Time
     [Required][DataType(DataType.DateTime)] public DateTime DateAndTime { get; set; }
+    [DataType(DataType.Time)] public TimeSpan TimeSpan { get; set; }
     //Description
     public string? Description { get; set; }
     //Price
