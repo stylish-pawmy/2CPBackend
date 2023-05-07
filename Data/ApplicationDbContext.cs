@@ -28,10 +28,8 @@ public class ApplicationDbContext : IdentityDbContext
         
         builder.Entity<ApplicationUser>()
         .HasMany(u => u.SavedEvents);
-        builder.Entity<ApplicationUser>()
-        .HasMany(u => u.EventsHistory);
 
-        
+
         builder.Entity<EventCategory>()
         .HasMany(c => c.Events).WithOne(e => e.Category);
     }

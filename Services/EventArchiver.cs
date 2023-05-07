@@ -26,46 +26,14 @@ public class EventArchiver : BackgroundService
             using (var scope = _scopeFactory.CreateAsyncScope())
             {
                 var _context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                var events = _context.Events
-                .Include(e => e.Attendees).ToList();
-
-                //Include event attendees references
-                for (int i = 0; i < events.Count; i++)
-                {
-                    for (int j = 0; j < events[i].Attendees.Count; j++)
-                    {
-                        var user = await _context.ApplicationUsers
-                        .Include(u => u.AttendedByUser)
-                        .Include(u => u.EventsHistory)
-                        .FirstOrDefaultAsync(
-                            u => u.Id == events[i].Attendees[j].Id
-                        );
-
-                        if (user == null)
-                        {
-                            _logger.LogError("Could not get user table references while trying to archive events.");
-                            throw new NullReferenceException();
-                        }
-
-                        events[i].Attendees[j] = user;
-                    }
-                }
+                var events = _context.Events.ToList();
 
                 foreach(Event _event in events)
                 {
                     if (_event.DateAndTime + _event.TimeSpan < DateTime.UtcNow)
-                    {
                         _event.Status = EventStatus.Ended;
-                        foreach(ApplicationUser user in _event.Attendees)
-                        {
-                            user.AttendedByUser.Remove(_event);
-                            user.EventsHistory.Add(_event);
-                        }
-                    }
                     else if (_event.DateAndTime < DateTime.UtcNow)
-                    {
                         _event.Status = EventStatus.Current;
-                    }
 
                     _logger.LogInformation($"Archived event with Id {_event.Id}");
                 }
@@ -76,10 +44,5 @@ public class EventArchiver : BackgroundService
             _logger.LogInformation($"Archive refreshed at: {DateTime.Now.ToString()} ");
             await Task.Delay(refreshRate, stoppingToken);
         }
-    }
-
-    public void ArchiveEvent(Event _event)
-    {
-        
     }
 }
