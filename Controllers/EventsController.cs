@@ -73,6 +73,7 @@ public class EventsController : ControllerBase
             Category = category,
             DateAdded = DateTime.Now.ToUniversalTime(),
             MaxAttendees = data.MaxAttendees,
+            Status = EventStatus.Upcoming
         };
         //Automatically give 1 day for non-set TimeSpans
         var timeSpan = TimeSpan.FromMinutes(data.TimeSpan);
@@ -139,7 +140,8 @@ public class EventsController : ControllerBase
             OrganizerName = resource.Organizer.UserName,
             OrganizerProfilePicture = resource.Organizer.ProfilePicture,
             MaxAttendees = resource.MaxAttendees,
-            TimeSpan = new Duration(resource.TimeSpan)
+            TimeSpan = new Duration(resource.TimeSpan),
+            Status = resource.Status
         };
 
         return Ok(data);
@@ -184,7 +186,8 @@ public class EventsController : ControllerBase
                 OrganizerName = _event.Organizer.UserName,
                 OrganizerProfilePicture = _event.Organizer.ProfilePicture,
                 MaxAttendees = _event.MaxAttendees,
-                TimeSpan = new Duration(_event.TimeSpan)
+                TimeSpan = new Duration(_event.TimeSpan),
+                Status = _event.Status
             };
             
             data.Add(result);
@@ -193,8 +196,47 @@ public class EventsController : ControllerBase
         return Ok(data);
     }
 
+[Authorize]
+[HttpPost("CancelEvent")]
+public async Task<ActionResult> CancelEventAsync(Guid Id)
+{
+    var resource = _context.Events
+    .Include(e => e.Organizer)
+    .Include(e => e.Category)
+    .SingleOrDefault(e => e.Id == Id);
 
-    [Authorize]
+    var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+    if (userName == null) return Unauthorized();
+
+    var user = await _userManager.FindByNameAsync(userName);
+
+    if (user == null) return StatusCode(500, "User reference should not be null");
+
+    //Check if user is organizer
+    if ((resource != null) && (user.Id != resource.Organizer.Id))
+        return Unauthorized("You do not own this resource.");
+
+    //Resource not found
+    if (resource == null)
+        return NotFound();
+
+    //Check if event already cancelled
+    if (resource.Status == EventStatus.Canceled)
+        return BadRequest("Event already canceled.");
+
+    //Forbid cancellation of passed events
+    if (resource.Status == EventStatus.Ended)
+        return BadRequest("Cannot cancel already passed events.");
+
+    resource.Status = EventStatus.Canceled;
+
+    await _context.SaveChangesAsync();
+    
+    return Ok();
+}
+
+//Code to reuse when implementing drafts
+/*     [Authorize]
     [HttpDelete("CancelEvent")]
     public async Task<ActionResult> CancelEventAsync(Guid Id)
     {
@@ -246,7 +288,7 @@ public class EventsController : ControllerBase
         _searchEngine.DisposeWriter();
 
         return NoContent();
-    }
+    } */
 
     [Authorize]
     [HttpPut("EditEvent")]
@@ -286,7 +328,11 @@ public class EventsController : ControllerBase
             return BadRequest(ModelUtils.GetModelErrors(ModelState.Values));
 
         //Forbid edition of passed events
-        if (resource.DateAndTime < DateTime.Now)
+        if (resource.Status == EventStatus.Ended)
+            return BadRequest("Cannot edit already passed events");
+        
+        //Forbid edition of canceled events
+        if (resource.Status == EventStatus.Canceled)
             return BadRequest("Cannot edit already passed events");
         
         //Check if date and time are valid
@@ -402,7 +448,8 @@ public class EventsController : ControllerBase
                 OrganizerName = _event.Organizer.UserName,
                 OrganizerProfilePicture = _event.Organizer.ProfilePicture,
                 MaxAttendees = _event.MaxAttendees,
-                TimeSpan = new Duration(_event.TimeSpan)
+                TimeSpan = new Duration(_event.TimeSpan),
+                Status = _event.Status
 
             };
             
@@ -454,7 +501,8 @@ public class EventsController : ControllerBase
                 OrganizerName = _event.Organizer.UserName,
                 OrganizerProfilePicture = _event.Organizer.ProfilePicture,
                 MaxAttendees = _event.MaxAttendees,
-                TimeSpan = new Duration(_event.TimeSpan)
+                TimeSpan = new Duration(_event.TimeSpan),
+                Status = _event.Status
             };
             
             data.Add(result);

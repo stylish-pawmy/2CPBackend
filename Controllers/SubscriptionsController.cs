@@ -221,12 +221,27 @@ public class SubscriptionsController : ControllerBase
         return Ok("User Unbanned from event.");
     }
 
+    [AllowAnonymous]
     [HttpGet("OrganizedEventList")]
     public async Task<ActionResult<IEnumerable<Guid>>> GetOrganizedEventAsync(string Id)
     {
         var user = await  _context.ApplicationUsers.Include(u => u.OrganizedByUser).SingleOrDefaultAsync(u => u.Id == Id);
 
         if (user == null) return NotFound();
+
+        //Include references to events
+        for (int i = 0; i < user.OrganizedByUser.Count; i++)
+        {
+            var _event = await _context.Events
+            .Include(e => e.Attendees)
+            .Include(e => e.Organizer)
+            .Include(e => e.Category)
+            .SingleOrDefaultAsync(e => e.Id == user.OrganizedByUser[i].Id);
+
+            if (_event == null) return StatusCode(500); 
+
+            user.OrganizedByUser[i] = _event;
+        }
 
         var data = new List<EventDetailsDto>();
 
@@ -254,7 +269,8 @@ public class SubscriptionsController : ControllerBase
                 OrganizerName = _event.Organizer.UserName,
                 OrganizerProfilePicture = _event.Organizer.ProfilePicture,
                 MaxAttendees = _event.MaxAttendees,
-                TimeSpan = new Duration(_event.TimeSpan)
+                TimeSpan = new Duration(_event.TimeSpan),
+                Status = _event.Status
             };
             
             data.Add(result);
@@ -273,12 +289,26 @@ public class SubscriptionsController : ControllerBase
         var user = await _userManager.FindByNameAsync(userName);
 
         if (user == null) return NotFound();
-        
+
         user = await _userManager.Users
         .Include(u => u.AttendedByUser)
         .SingleOrDefaultAsync(u => u.Id == user.Id);
         
         if (user == null) return StatusCode(500, "User reference should not be null.");
+
+        //Include references to events
+        for (int i = 0; i < user.AttendedByUser.Count; i++)
+        {
+            var _event = await _context.Events
+            .Include(e => e.Attendees)
+            .Include(e => e.Organizer)
+            .Include(e => e.Category)
+            .SingleOrDefaultAsync(e => e.Id == user.AttendedByUser[i].Id);
+
+            if (_event == null) return StatusCode(500); 
+
+            user.AttendedByUser[i] = _event;
+        }
 
         var data = new List<EventDetailsDto>();
 
@@ -306,7 +336,8 @@ public class SubscriptionsController : ControllerBase
                 OrganizerName = _event.Organizer.UserName,
                 OrganizerProfilePicture = _event.Organizer.ProfilePicture,
                 MaxAttendees = _event.MaxAttendees,
-                TimeSpan = new Duration(_event.TimeSpan)
+                TimeSpan = new Duration(_event.TimeSpan),
+                Status = _event.Status
             };
             
             data.Add(result);
@@ -327,7 +358,7 @@ public class SubscriptionsController : ControllerBase
         if (user == null) return StatusCode(500, "User reference should not be null");
 
         user = await _userManager.Users
-        .Include(u => u.OrganizedByUser)
+        .Include(u => u.SavedEvents)
         .SingleOrDefaultAsync(u => u.Id == user.Id);
 
         if (user == null) return StatusCode(500, "User reference should not be null.");
@@ -357,7 +388,7 @@ public class SubscriptionsController : ControllerBase
         if (user == null) return StatusCode(500, "User reference should not be null");
 
         user = await _userManager.Users
-        .Include(u => u.OrganizedByUser)
+        .Include(u => u.SavedEvents)
         .SingleOrDefaultAsync(u => u.Id == user.Id);
 
         if (user == null) return StatusCode(500, "User reference should not be null.");
@@ -387,10 +418,24 @@ public class SubscriptionsController : ControllerBase
         if (user == null) return StatusCode(500, "User reference should not be null");
 
         user = await _userManager.Users
-        .Include(u => u.OrganizedByUser)
+        .Include(u => u.SavedEvents)
         .SingleOrDefaultAsync(u => u.Id == user.Id);
 
         if (user == null) return StatusCode(500, "User reference should not be null.");
+
+        //Include references to events
+        for (int i = 0; i < user.SavedEvents.Count; i++)
+        {
+            var _event = await _context.Events
+            .Include(e => e.Attendees)
+            .Include(e => e.Organizer)
+            .Include(e => e.Category)
+            .SingleOrDefaultAsync(e => e.Id == user.SavedEvents[i].Id);
+
+            if (_event == null) return StatusCode(500); 
+
+            user.SavedEvents[i] = _event;
+        }
 
         var data = new List<EventDetailsDto>();
 
@@ -418,7 +463,8 @@ public class SubscriptionsController : ControllerBase
                 OrganizerName = _event.Organizer.UserName,
                 OrganizerProfilePicture = _event.Organizer.ProfilePicture,
                 MaxAttendees = _event.MaxAttendees,
-                TimeSpan = new Duration(_event.TimeSpan)
+                TimeSpan = new Duration(_event.TimeSpan),
+                Status = _event.Status
             };
             
             data.Add(result);

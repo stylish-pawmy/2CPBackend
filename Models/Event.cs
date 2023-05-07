@@ -12,6 +12,7 @@ public class Event
     //Date & Time
     [Required][DataType(DataType.DateTime)] public DateTime DateAndTime { get; set; }
     [DataType(DataType.Time)] public TimeSpan TimeSpan { get; set; }
+    public EventStatus Status { get; set; }
     //Description
     public string? Description { get; set; }
     //Price
@@ -28,4 +29,13 @@ public class Event
     [Required] public EventCategory Category { get; set; } = null!;
     //Date Added
     public DateTime DateAdded { get; set; }
+}
+
+
+public enum EventStatus
+{
+    Ended = 0,
+    Upcoming = 1,
+    Current = 2,
+    Canceled = 3
 }

@@ -19,7 +19,6 @@ builder.Services.AddControllers()
 .AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
-builder.Services.AddHostedService<EventArchiver>();
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
@@ -54,6 +53,7 @@ builder.Services.AddScoped<IBlobStorage, AzureBlobStorage>();
 builder.Services.AddScoped<ISearchEngine, SearchEngine>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHostedService<EventArchiver>();
 builder.Services.AddSwaggerGen(c =>
     {
         c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme

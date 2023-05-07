@@ -11,6 +11,7 @@ public class EventDetailsDto
     //Date & Time
     [DataType(DataType.DateTime)] public DateTime DateAndTime { get; set; }
     [DataType(DataType.Duration)] public Duration TimeSpan { get; set; } = null!;
+    public EventStatus Status { get; set; }
     //Description
     public string? Description { get; set; }
     //Price

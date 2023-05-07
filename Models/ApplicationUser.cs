@@ -14,6 +14,7 @@ public class ApplicationUser : IdentityUser
     public List<Event> OrganizedByUser { get; set; } = new List<Event>();
     //Attending Events
     public List<Event> AttendedByUser {get; set; } = new List<Event>();
+    public List<Event> EventsHistory {get; set; } = new List<Event>();
     //Saved Events
     public List<Event> SavedEvents { get; set; } = new List<Event>();
     public string? ProfilePicture {get; set;}

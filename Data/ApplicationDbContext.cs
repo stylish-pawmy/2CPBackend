@@ -24,8 +24,14 @@ public class ApplicationDbContext : IdentityDbContext
         .HasOne(e => e.Organizer).WithMany(u => u.OrganizedByUser);
         builder.Entity<Event>()
         .HasMany(e => e.BanList);
+
+        
         builder.Entity<ApplicationUser>()
         .HasMany(u => u.SavedEvents);
+        builder.Entity<ApplicationUser>()
+        .HasMany(u => u.EventsHistory);
+
+        
         builder.Entity<EventCategory>()
         .HasMany(c => c.Events).WithOne(e => e.Category);
     }
