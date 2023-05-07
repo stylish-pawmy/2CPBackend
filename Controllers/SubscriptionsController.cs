@@ -70,6 +70,14 @@ public class SubscriptionsController : ControllerBase
         
         if (_event == null) return NotFound();
 
+        //Event status check
+        if (_event.Status == EventStatus.Ended)
+            return BadRequest("Event already ended.");
+        if (_event.Status == EventStatus.Current)
+            return BadRequest("Event already started.");
+        if (_event.Status == EventStatus.Canceled)
+            return BadRequest("Event canceled.");
+
         if (_event.BanList.Contains(user)) return Unauthorized("User is banned from attending this event.");
 
         if (user.AttendedByUser.Contains(_event)) return BadRequest("User already subscribed to event.");
@@ -98,6 +106,14 @@ public class SubscriptionsController : ControllerBase
         if (user == null) return StatusCode(500, "User authenticated but server unable to retrieve user reference.");
         
         if (_event == null) return NotFound();
+
+        //Event status check
+        if (_event.Status == EventStatus.Ended)
+            return BadRequest("Event already ended.");
+        if (_event.Status == EventStatus.Current)
+            return BadRequest("Event already started.");
+        if (_event.Status == EventStatus.Canceled)
+            return BadRequest("Event canceled.");
 
         if (!user.AttendedByUser.Contains(_event)) return BadRequest("User not subscribed to event.");
 
@@ -129,6 +145,14 @@ public class SubscriptionsController : ControllerBase
         if ((_event != null) && (user.Id != _event.Organizer.Id)) return Unauthorized("You do not own this event.");
 
         if (_event == null) return NotFound("Event not found.");
+
+        //Event status check
+        if (_event.Status == EventStatus.Ended)
+            return BadRequest("Event already ended.");
+        if (_event.Status == EventStatus.Current)
+            return BadRequest("Event already started.");
+        if (_event.Status == EventStatus.Canceled)
+            return BadRequest("Event canceled.");
 
         if (subject == null) return NotFound("User not found.");
 
@@ -167,6 +191,14 @@ public class SubscriptionsController : ControllerBase
         if (_event == null) return NotFound("Event not found.");
 
         if (subject == null) return NotFound("User not found.");
+
+        //Event status check
+        if (_event.Status == EventStatus.Ended)
+            return BadRequest("Event already ended.");
+        if (_event.Status == EventStatus.Current)
+            return BadRequest("Event already started.");
+        if (_event.Status == EventStatus.Canceled)
+            return BadRequest("Event canceled.");
 
         if (user.Id == subject.Id) return BadRequest("Organizer cannot be banned from event.");
 
@@ -209,6 +241,14 @@ public class SubscriptionsController : ControllerBase
         if ((_event != null) && (user.Id != _event.Organizer.Id)) return Unauthorized("You do not own this event.");
 
         if (_event == null) return NotFound("Event not found.");
+
+        //Event status check
+        if (_event.Status == EventStatus.Ended)
+            return BadRequest("Event already ended.");
+        if (_event.Status == EventStatus.Current)
+            return BadRequest("Event already started.");
+        if (_event.Status == EventStatus.Canceled)
+            return BadRequest("Event canceled.");
 
         if (subject == null) return NotFound("User not found.");
 
