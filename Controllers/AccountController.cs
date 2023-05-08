@@ -127,7 +127,7 @@ public class AccountController : Controller
     
 
     [HttpPost("Authenticate")]
-    public async Task<ActionResult<string>> Authenticate([FromForm][FromBody] LoginDto data)
+    public async Task<ActionResult<Object>> Authenticate([FromForm][FromBody] LoginDto data)
     {
         if (!ModelState.IsValid) return BadRequest("Invalid login data.");
         //Finding the user
@@ -162,7 +162,21 @@ public class AccountController : Controller
             signingCredentials: credentials
         );
 
-        return Ok(new JwtSecurityTokenHandler().WriteToken(tokenOption));
+        var resource = new UserDetailsDto()
+        {
+            Id = user.Id,
+            UserName = user.UserName,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            Biography = user.Biography,
+            ProfilePictureUrl = user.ProfilePicture,
+            PhoneNumber = user.PhoneNumber,
+        };
+
+        var loginToken = new JwtSecurityTokenHandler().WriteToken(tokenOption);
+
+        return Ok(new {token = loginToken, userData = resource});
 
     }
 

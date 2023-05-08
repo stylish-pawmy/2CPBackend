@@ -36,6 +36,7 @@ public class SubscriptionsController : ControllerBase
         {
             var resource = new UserDetailsDto
             {
+                Id = subscriber.Id,
                 FirstName = subscriber.FirstName,
                 LastName = subscriber.LastName,
                 Email = subscriber.Email,

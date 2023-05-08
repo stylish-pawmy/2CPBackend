@@ -4,6 +4,8 @@ using System.ComponentModel.DataAnnotations;
 
 public class UserDetailsDto
 {
+    //Id
+    public string? Id { get; set; }
     //First and Last Name
     [Required] public string FirstName { get; set; } = null!;
     [Required] public string LastName { get; set; } = null!;

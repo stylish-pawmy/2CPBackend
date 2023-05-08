@@ -45,6 +45,7 @@ public class UsersController : ControllerBase
 
         var resource = new UserDetailsDto
         {
+            Id = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
             Email = user.Email,
@@ -227,6 +228,7 @@ public class UsersController : ControllerBase
         {
             var resource = new UserDetailsDto
             {
+                Id = user.Id,
                 FirstName = follower.FirstName,
                 LastName = follower.LastName,
                 Email = follower.Email,
@@ -259,6 +261,7 @@ public class UsersController : ControllerBase
         {
             var resource = new UserDetailsDto
             {
+                Id = user.Id,
                 FirstName = follower.FirstName,
                 LastName = follower.LastName,
                 Email = follower.Email,
