@@ -30,19 +30,14 @@ public class UsersController : ControllerBase
         _blobStorage = blobStorage;
     }
 
+    [AllowAnonymous]
     [HttpGet("GetUserDetails")]
     public async Task<ActionResult> GetUserDetailsAsync(string subjectId)
     {
-        //Getting current user
-        var userName = HttpContext.User.FindFirst(ClaimTypes.Name)?.Value;
-        if (userName == null) return Unauthorized();
+        var user = await _userManager.FindByIdAsync(subjectId);
 
-        var user = await _userManager.FindByNameAsync(userName);
-
-        if (user == null) return StatusCode(500, "User reference should not be null");
-
-        if (user.Email == null || user.UserName == null) return StatusCode(500, "Identifiers should not be null.");
-
+        if (user == null) return NotFound();
+        
         var resource = new UserDetailsDto
         {
             Id = user.Id,
