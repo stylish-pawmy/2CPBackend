@@ -223,13 +223,14 @@ public class UsersController : ControllerBase
         {
             var resource = new UserDetailsDto
             {
-                Id = user.Id,
+                Id = follower.Id,
                 FirstName = follower.FirstName,
                 LastName = follower.LastName,
                 Email = follower.Email,
                 PhoneNumber = follower.PhoneNumber,
                 Biography = follower.Biography,
-                UserName = follower.UserName
+                UserName = follower.UserName,
+                ProfilePictureUrl = follower.ProfilePicture
             };
 
             //Adding profile picture link
@@ -256,13 +257,14 @@ public class UsersController : ControllerBase
         {
             var resource = new UserDetailsDto
             {
-                Id = user.Id,
+                Id = follower.Id,
                 FirstName = follower.FirstName,
                 LastName = follower.LastName,
                 Email = follower.Email,
                 PhoneNumber = follower.PhoneNumber,
                 Biography = follower.Biography,
-                UserName = follower.UserName
+                UserName = follower.UserName,
+                ProfilePictureUrl = follower.ProfilePicture
             };
 
             //Adding profile picture link
