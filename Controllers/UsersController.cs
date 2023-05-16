@@ -235,7 +235,7 @@ public class UsersController : ControllerBase
 
             //Adding profile picture link
             if (follower.ProfilePicture == null) resource.ProfilePictureUrl = null;
-            else resource.ProfilePictureUrl = user.ProfilePicture;
+            else resource.ProfilePictureUrl = follower.ProfilePicture;
             data.Add(resource);
         }
 
@@ -269,7 +269,7 @@ public class UsersController : ControllerBase
 
             //Adding profile picture link
             if (follower.ProfilePicture == null) resource.ProfilePictureUrl = null;
-            else resource.ProfilePictureUrl = user.ProfilePicture;
+            else resource.ProfilePictureUrl = follower.ProfilePicture;
             data.Add(resource);
         }
 
