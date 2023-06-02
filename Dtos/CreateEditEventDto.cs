@@ -16,7 +16,8 @@ public class CreateEditEventDto
     //Cover File
     public IFormFile? CoverFile { get; set; }
     //Location
-    [Required] public Coordinates Location { get; set; } = null!;
+    [Required] public double Longitude { get; set; }
+    [Required] public double Latitude { get; set; }
     //Category
     [Required] public int CategoryId { get; set; }
     //Maximum number of attendees

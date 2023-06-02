@@ -69,7 +69,7 @@ public class EventsController : ControllerBase
             Price = data.Price,
             Organizer = user,
             Attendees = new List<ApplicationUser>(),
-            Location = new Point(data.Location.Longitude, data.Location.Latitude),
+            Location = new Point(data.Longitude, data.Latitude),
             Category = category,
             DateAdded = DateTime.Now.ToUniversalTime(),
             MaxAttendees = data.MaxAttendees,
@@ -345,7 +345,7 @@ public async Task<ActionResult> CancelEventAsync(Guid Id)
         
         //Edit event info
         resource.Title = data.Title;
-        resource.Location = new Point(data.Location.Longitude, data.Location.Latitude);
+        resource.Location = new Point(data.Longitude, data.Latitude);
         resource.DateAndTime = data.DateAndTime.ToUniversalTime();
         resource.Price = data.Price;
         resource.Description = data.Description;
