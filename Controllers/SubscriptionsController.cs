@@ -8,6 +8,8 @@ using System.Security.Claims;
 
 using _2cpbackend.Models;
 using _2cpbackend.Data;
+using _2cpbackend.Services;
+using _2cpbackend.Utilities;
 
 [ApiController]
 [Authorize]
@@ -16,11 +18,13 @@ public class SubscriptionsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IEmailService _emailService;
 
-    public SubscriptionsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+    public SubscriptionsController(IEmailService emailService, ApplicationDbContext context, UserManager<ApplicationUser> userManager)
     {
         _userManager = userManager;
         _context = context;
+        _emailService = emailService;
     }
 
     [AllowAnonymous]
@@ -79,6 +83,7 @@ public class SubscriptionsController : ControllerBase
         if (_event.Status == EventStatus.Canceled)
             return BadRequest("Event canceled.");
 
+        if (user.Email == null) return BadRequest("User does not have an email.");
         if (_event.BanList.Contains(user)) return Unauthorized("User is banned from attending this event.");
 
         if (user.AttendedByUser.Contains(_event)) return BadRequest("User already subscribed to event.");
@@ -88,6 +93,12 @@ public class SubscriptionsController : ControllerBase
         user.AttendedByUser.Add(_event);
 
         await _context.SaveChangesAsync();
+
+        await _emailService.SendImage(user.Email,
+         "Votre ticket est prêt!",
+         $"Ceci est votre ticket pour atteindre à {_event.Title}, n'oubliez pas de rammener son imprimé le jour de lévènement.",
+         TicketGenerator.WriteEventInfo("Data/ticket.png", _event, user));
+
         
         return Ok("User subscribed to event.");
     }
