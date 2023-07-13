@@ -479,4 +479,5 @@ $RECYCLE.BIN/
 # Pictures
 **/Data/EventCovers
 **/Data/ProfilePictures
-**/Data/index
+**/Data/indexDockerfile
+Dockerfile.save

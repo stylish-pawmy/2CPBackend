@@ -2,23 +2,47 @@ namespace _2cpbackend.Utilities;
 
 using ImageMagick;
 using QRCoder;
+using Azure.Storage.Blobs;
 
 using _2cpbackend.Models;
 
 public class TicketGenerator
 {
+    private readonly IConfiguration _configuration;
+
+    public TicketGenerator(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
+
     public static byte[] WriteEventInfo(string outputImagePath, Event eventData, ApplicationUser user)
     {
+        //Blob Storage
+        var templateBlobConnectionString = "DefaultEndpointsProtocol=https;AccountName=2cpbackendstore;AccountKey=4o932Fjoevj8lyAtU7533t1VE6oI0x8oBCvUCNRZOsL9UaBBtFNeqmQqKoZTqatnErkjhSuFtEEP+ASt7zQ5bw==;EndpointSuffix=core.windows.net";
+
+        var blobServiceClient = new BlobServiceClient(templateBlobConnectionString);
+        var containerClient = blobServiceClient.GetBlobContainerClient("templates");
+        var blobClient = containerClient.GetBlobClient("TicketTemplate.png");
+
+        // Download the font file from Azure Blob Storage
+        var fontBlobClient = containerClient.GetBlobClient("Montserrat.ttf");
+        var fontFilePath = Path.Combine(Path.GetTempPath(), "Montserrat.ttf");
+        fontBlobClient.DownloadTo(fontFilePath);
+
         // Read the template image using Magick.NET
+        using var imageTemplate = new MemoryStream();
+        blobClient.DownloadTo(imageTemplate);
+        imageTemplate.Seek(0, SeekOrigin.Begin);
+
         using var stream = new MemoryStream();
-        using (var templateImage = new MagickImage("Templates/TicketTemplate.png"))
+        using (var templateImage = new MagickImage(imageTemplate))
         {
             // Create a new MagickDraw object to write text
                 /*-----------------TITLE----------------------*/
                 // Set the text settings
                 var settings = new MagickReadSettings
                 {
-                    Font = "Fonts/Montserrat.ttf",
+                    Font = fontFilePath,
                     FontPointsize = 50,
                     FillColor = MagickColors.Black,
                     TextGravity = Gravity.West,
@@ -39,7 +63,7 @@ public class TicketGenerator
                 // Set the text settings
                 settings = new MagickReadSettings
                 {
-                    Font = "Fonts/Montserrat.ttf",
+                    Font = fontFilePath,
                     FontPointsize = 20,
                     FillColor = MagickColors.Black,
                     TextGravity = Gravity.West,
