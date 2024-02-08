@@ -1,4 +1,4 @@
-namespace _2cpbackend.Controllers;
+namespace Eventi.Server.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using NetTopologySuite.Geometries;
 
-using _2cpbackend.Data;
-using _2cpbackend.Models;
-using _2cpbackend.Utilities;
-using _2cpbackend.Services;
+using Eventi.Server.Data;
+using Eventi.Server.Models;
+using Eventi.Server.Utilities;
+using Eventi.Server.Services;
 
 [ApiController]
 [Route("api/[Controller]")]
@@ -116,7 +116,7 @@ public class EventsController : ControllerBase
             Description = resource.Description,
             Price = resource.Price,
             CoverUrl = resource.CoverPhoto,
-            Location = new _2cpbackend.Models.Coordinates
+            Location = new Eventi.Server.Models.Coordinates
             {
                 Longitude = resource.Location.X,
                 Latitude = resource.Location.Y

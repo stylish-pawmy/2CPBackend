@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
-namespace _2cpbackend.Controllers;
+namespace Eventi.Server.Controllers;
 
 [ApiController]
 [Authorize]

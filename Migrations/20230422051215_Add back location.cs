@@ -3,7 +3,7 @@ using NetTopologySuite.Geometries;
 
 #nullable disable
 
-namespace _2cpbackend.Migrations
+namespace Eventi.Server.Migrations
 {
     /// <inheritdoc />
     public partial class Addbacklocation : Migration

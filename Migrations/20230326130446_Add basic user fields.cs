@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace _2cpbackend.Migrations
+namespace Eventi.Server.Migrations
 {
     /// <inheritdoc />
     public partial class Addbasicuserfields : Migration

@@ -1,4 +1,4 @@
-namespace _2cpbackend;
+namespace Eventi.Server;
 
 public class WeatherForecast
 {

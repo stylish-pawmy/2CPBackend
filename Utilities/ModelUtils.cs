@@ -1,4 +1,4 @@
-namespace _2cpbackend.Utilities;
+namespace Eventi.Server.Utilities;
 
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 

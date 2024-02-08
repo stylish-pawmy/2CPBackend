@@ -1,4 +1,4 @@
-namespace _2cpbackend.Services;
+namespace Eventi.Server.Services;
 
 using MailKit.Net.Smtp;
 using MailKit.Security;

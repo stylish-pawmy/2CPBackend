@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using _2cpbackend.Data;
+using Eventi.Server.Data;
 
 #nullable disable
 
-namespace _2cpbackend.Migrations
+namespace Eventi.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20230327173211_Add event class with elementary fields")]
@@ -246,7 +246,7 @@ namespace _2cpbackend.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("_2cpbackend.Models.Event", b =>
+            modelBuilder.Entity("Eventi.Server.Models.Event", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -279,7 +279,7 @@ namespace _2cpbackend.Migrations
                     b.ToTable("Events");
                 });
 
-            modelBuilder.Entity("_2cpbackend.Models.ApplicationUser", b =>
+            modelBuilder.Entity("Eventi.Server.Models.ApplicationUser", b =>
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
 
@@ -302,13 +302,13 @@ namespace _2cpbackend.Migrations
 
             modelBuilder.Entity("ApplicationUserEvent", b =>
                 {
-                    b.HasOne("_2cpbackend.Models.Event", null)
+                    b.HasOne("Eventi.Server.Models.Event", null)
                         .WithMany()
                         .HasForeignKey("AttendedByUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("_2cpbackend.Models.ApplicationUser", null)
+                    b.HasOne("Eventi.Server.Models.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("AttendeesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -366,9 +366,9 @@ namespace _2cpbackend.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("_2cpbackend.Models.Event", b =>
+            modelBuilder.Entity("Eventi.Server.Models.Event", b =>
                 {
-                    b.HasOne("_2cpbackend.Models.ApplicationUser", "Organizer")
+                    b.HasOne("Eventi.Server.Models.ApplicationUser", "Organizer")
                         .WithMany("OrganizedByUser")
                         .HasForeignKey("OrganizerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -377,7 +377,7 @@ namespace _2cpbackend.Migrations
                     b.Navigation("Organizer");
                 });
 
-            modelBuilder.Entity("_2cpbackend.Models.ApplicationUser", b =>
+            modelBuilder.Entity("Eventi.Server.Models.ApplicationUser", b =>
                 {
                     b.Navigation("OrganizedByUser");
                 });

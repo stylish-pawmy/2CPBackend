@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using _2cpbackend.Data;
+using Eventi.Server.Data;
 
 #nullable disable
 
-namespace _2cpbackend.Migrations
+namespace Eventi.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20230326055824_Initialize Database")]

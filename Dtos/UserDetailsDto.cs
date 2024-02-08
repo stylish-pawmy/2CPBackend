@@ -1,4 +1,4 @@
-namespace _2cpbackend.Models;
+namespace Eventi.Server.Models;
 
 using System.ComponentModel.DataAnnotations;
 

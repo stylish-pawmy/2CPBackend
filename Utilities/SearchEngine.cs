@@ -1,4 +1,4 @@
-namespace _2cpbackend.Utilities;
+namespace Eventi.Server.Utilities;
 
 //Lucine search engine library references
 using Lucene.Net.Analysis.Standard;
@@ -8,7 +8,7 @@ using Lucene.Net.Index;
 using Lucene.Net.Documents;
 using Lucene.Net.Util;
 
-using _2cpbackend.Models;
+using Eventi.Server.Models;
 
 public class SearchEngine : ISearchEngine
 {

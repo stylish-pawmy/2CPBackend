@@ -1,4 +1,4 @@
-namespace _2cpbackend.Controllers;
+namespace Eventi.Server.Controllers;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
-using _2cpbackend.Models;
-using _2cpbackend.Utilities;
-using _2cpbackend.Data;
-using _2cpbackend.Services;
+using Eventi.Server.Models;
+using Eventi.Server.Utilities;
+using Eventi.Server.Data;
+using Eventi.Server.Services;
 
 [ApiController]
 [Route("api/[controller]")]

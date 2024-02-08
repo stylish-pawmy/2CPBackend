@@ -1,8 +1,8 @@
-namespace _2cpbackend.Data;
+namespace Eventi.Server.Data;
 
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using _2cpbackend.Models;
+using Eventi.Server.Models;
 
 public class ApplicationDbContext : IdentityDbContext
 {

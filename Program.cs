@@ -1,7 +1,7 @@
-using _2cpbackend.Data;
-using _2cpbackend.Services;
-using _2cpbackend.Models;
-using _2cpbackend.Utilities;
+using Eventi.Server.Data;
+using Eventi.Server.Services;
+using Eventi.Server.Models;
+using Eventi.Server.Utilities;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;

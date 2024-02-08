@@ -1,4 +1,4 @@
-namespace _2cpbackend.Controllers;
+namespace Eventi.Server.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
-using _2cpbackend.Models;
-using _2cpbackend.Data;
+using Eventi.Server.Models;
+using Eventi.Server.Data;
 
 [ApiController]
 [Authorize]

@@ -3,7 +3,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace _2cpbackend.Migrations
+namespace Eventi.Server.Migrations
 {
     /// <inheritdoc />
     public partial class Addcategoriestoevents : Migration

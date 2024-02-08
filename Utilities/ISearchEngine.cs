@@ -1,8 +1,8 @@
-namespace _2cpbackend.Utilities;
+namespace Eventi.Server.Utilities;
 
 using Lucene.Net.Index;
 
-using _2cpbackend.Models;
+using Eventi.Server.Models;
 
 
 public interface ISearchEngine
